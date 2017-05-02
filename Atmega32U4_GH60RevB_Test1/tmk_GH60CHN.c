@@ -8,7 +8,7 @@
 #include "Functions.h"
 #include "Matrix_GH60CHN.h"
 
-uint8_t r, c;
+uint8_t r, c,i;
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
 //col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3
@@ -31,6 +31,7 @@ void init_cols(void) {
 }
 uint8_t FN=0;
 uint8_t send_required=0;
+	uint8_t change=0;
 //keytype ==> 0,mask_FN,mask_ModifierKeys,mask_Codekeys,0,0,pressFN,press_keys
 void pokerMode(){
 	while (1) {
@@ -39,7 +40,7 @@ void pokerMode(){
 		    pinMode(rowPins[r],OUTPUT);
 			digitalWrite(rowPins[r],LOW);
 			for (c = 0; c < COLS; c++) {
-				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;send_required=2;}
+				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;send_required=0X40;}
 				if(keytype[r][c]==0x41)FN=0x02;
 			}
 			init_rows();
@@ -50,11 +51,22 @@ void pokerMode(){
 						if((keytype[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
 			       else if((keytype[r][c] | FN)== 0x23) pressModifierKeys(hexaKeys[r][c]);
 				   else if((keytype[r][c] | FN)== 0x11) presskey(hexaKeys[r][c]);
-				   else if((keytype[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
-					
+				   else if((keytype[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);					
 				}
 			}
-	if(send_required!=0)usb_keyboard_send();
+			 change=0;
+			if(keyboard_modifier_keys2!=keyboard_modifier_keys){
+				keyboard_modifier_keys2=keyboard_modifier_keys;
+				change=1;
+			}
+			for (i = 0; i < 6; i++) {
+			if(keyboard_keys2[i]!=keyboard_keys[i]){
+				keyboard_keys2[i]=keyboard_keys[i];
+				change=1;
+			}
+			}
+	if(send_required==0X40 && change==1)usb_keyboard_send();
+	if(send_required==1)usb_keyboard_send();
 	if(send_required>0)send_required-=1;
 		///////////////////////////////////
 	}

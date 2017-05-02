@@ -11,6 +11,8 @@ int8_t usb_keyboard_press(uint8_t key, uint8_t modifier);
 int8_t usb_keyboard_send(void);
 extern uint8_t keyboard_modifier_keys;
 extern uint8_t keyboard_keys[6];
+extern uint8_t keyboard_modifier_keys2;
+extern uint8_t keyboard_keys2[6];
 extern volatile uint8_t keyboard_leds;
 
 // This file does not include the HID debug functions, so these empty

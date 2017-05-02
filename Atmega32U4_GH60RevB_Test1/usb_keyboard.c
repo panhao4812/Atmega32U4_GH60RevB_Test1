@@ -239,10 +239,10 @@ static volatile uint8_t usb_configuration=0;
 // 1=left ctrl,    2=left shift,   4=left alt,    8=left gui
 // 16=right ctrl, 32=right shift, 64=right alt, 128=right gui
 uint8_t keyboard_modifier_keys=0;
-
+uint8_t keyboard_modifier_keys2=0;
 // which keys are currently pressed, up to 6 keys may be down at once
 uint8_t keyboard_keys[6]={0,0,0,0,0,0};
-
+uint8_t keyboard_keys2[6]={0,0,0,0,0,0};
 // protocol setting from the host.  We use exactly the same report
 // either way, so this variable only stores the setting since we
 // are required to be able to report which setting is in use.
