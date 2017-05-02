@@ -30,6 +30,7 @@ void init_cols(void) {
 	PORTB |= (1 << 7 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 1 | 1 << 0);
 }
 uint8_t FN=0;
+uint8_t send_required=0;
 //keytype ==> 0,mask_FN,mask_ModifierKeys,mask_Codekeys,0,0,pressFN,press_keys
 void pokerMode(){
 	while (1) {
@@ -38,7 +39,7 @@ void pokerMode(){
 		    pinMode(rowPins[r],OUTPUT);
 			digitalWrite(rowPins[r],LOW);
 			for (c = 0; c < COLS; c++) {
-				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;}
+				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;send_required=2;}
 				if(keytype[r][c]==0x41)FN=0x02;
 			}
 			init_rows();
@@ -46,15 +47,15 @@ void pokerMode(){
 		releaseAll();
 			for (r = 0; r < ROWS; r++) {
 				for (c = 0; c < COLS; c++) {
-					switch(keytype[r][c]|FN){
-						case 0x21 :pressModifierKeys(hexaKeys[r][c]);
-						case 0x23 :pressModifierKeys(hexaKeys[r][c]);
-						case 0x11 :presskey(hexaKeys[r][c]);
-						case 0x13 :presskey(hexaKeys2[r][c]);
-					}
+						if((keytype[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
+			       else if((keytype[r][c] | FN)== 0x23) pressModifierKeys(hexaKeys[r][c]);
+				   else if((keytype[r][c] | FN)== 0x11) presskey(hexaKeys[r][c]);
+				   else if((keytype[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
+					
 				}
 			}
-		usb_keyboard_send();
+	if(send_required!=0)usb_keyboard_send();
+	if(send_required>0)send_required-=1;
 		///////////////////////////////////
 	}
 }
@@ -69,6 +70,8 @@ int main(void) {
 	init_cols();
 	init_rows();
 	_delay_ms(500);
+	releaseAll();
+	usb_keyboard_send();
 	pokerMode();	
 	return 0;
 }
