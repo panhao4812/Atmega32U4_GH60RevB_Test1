@@ -2,7 +2,7 @@
 * tmk_GH60CHN.c
 *
 *  Created on: 2014Äê7ÔÂ25ÈÕ
-*      Author: Administrator
+*      Author: zian1
 */
 
 #include "Functions.h"
@@ -13,47 +13,7 @@ uint8_t r, c;
 //row D0 D1 D2 D3 D5
 //col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3
 
-void read_cols(uint8_t row) {
-	if (PINF & (1 << 0)) {keytype[row][0]&= ~0x01;} else {keytype[row][0]|= 0x01;}
-	if (PINF & (1 << 1)) {keytype[row][1]&= ~0x01;} else {keytype[row][1]|= 0x01;}
-	if (PINE & (1 << 6)) {keytype[row][2]&= ~0x01;} else {keytype[row][2]|= 0x01;}
-	if (PINC & (1 << 7)) {keytype[row][3]&= ~0x01;} else {keytype[row][3]|= 0x01;}
-	if (PINC & (1 << 6)) {keytype[row][4]&= ~0x01;} else {keytype[row][4]|= 0x01;}
-	if (PINB & (1 << 7)) {keytype[row][5]&= ~0x01;} else {keytype[row][5]|= 0x01;}
-	if (PIND & (1 << 4)) {keytype[row][6]&= ~0x01;} else {keytype[row][6]|= 0x01;}
-	if (PINB & (1 << 0)) {keytype[row][7]&= ~0x01;} else {keytype[row][7]|= 0x01;}
-	if (PINB & (1 << 1)) {keytype[row][8]&= ~0x01;} else {keytype[row][8]|= 0x01;}
-	if (PINB & (1 << 5)) {keytype[row][9]&= ~0x01;} else {keytype[row][9]|= 0x01;}
-	if (PINB & (1 << 4)) {keytype[row][10]&= ~0x01;} else {keytype[row][10]|= 0x01;}
-	if (PIND & (1 << 7)) {keytype[row][11]&= ~0x01;} else {keytype[row][11]|= 0x01;}
-	if (PIND & (1 << 6)) {keytype[row][12]&= ~0x01;} else {keytype[row][12]|= 0x01;}
-	if (PINB & (1 << 3)) {keytype[row][13]&= ~0x01;} else {keytype[row][13]|= 0x01;}
-}
-void pullDownRows(uint8_t row) {
-	switch (row) {
-		case 0:
-		DDRD |= (1 << 0);
-		PORTD &= ~(1 << 0);
-		break;
-		case 1:
-		DDRD |= (1 << 1);
-		PORTD &= ~(1 << 1);
-		break;
-		case 2:
-		DDRD |= (1 << 2);
-		PORTD &= ~(1 << 2);
-		break;
-		case 3:
-		DDRD |= (1 << 3);
-		PORTD &= ~(1 << 3);
-		break;
-		case 4:
-		DDRD |= (1 << 5);
-		PORTD &= ~(1 << 5);
-		break;
-	}
-}
-void unselect_rows(void) {
+void init_rows(void) {
 	DDRD &= ~0b00101111;
 	PORTD|=0b00101111;
 }
@@ -75,12 +35,13 @@ void pokerMode(){
 	while (1) {
 	FN=0;
 		for (r = 0; r < ROWS; r++) {
-			pullDownRows(r);
+		    pinMode(rowPins[r],OUTPUT);
+			digitalWrite(rowPins[r],LOW);
 			for (c = 0; c < COLS; c++) {
 				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;}
 				if(keytype[r][c]==0x41)FN=0x02;
 			}
-			unselect_rows();
+			init_rows();
 		}
 		releaseAll();
 			for (r = 0; r < ROWS; r++) {
@@ -100,17 +61,15 @@ void pokerMode(){
 int main(void) {
 	CPU_PRESCALE(CPU_16MHz);
 	usb_init();
-	while (!usb_configured()){_delay_ms(300);}
-	
+	while (!usb_configured()){_delay_ms(300);}	
 	//  TCCR0A = 0x00;
 	//	TCCR0B =(1<<CS00);
 	//	TIMSK0 = (1<<TOIE0);
 	////////////////////////////////////////////////
 	init_cols();
-	unselect_rows();
+	init_rows();
 	_delay_ms(500);
-	pokerMode();
-	
+	pokerMode();	
 	return 0;
 }
 /*
