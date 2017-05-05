@@ -40,7 +40,7 @@ void pokerMode(){
 		    pinMode(rowPins[r],OUTPUT);
 			digitalWrite(rowPins[r],LOW);
 			for (c = 0; c < COLS; c++) {
-				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;send_required=0X40;}
+				if (digitalRead(colPins[c])) {keytype[r][c]&= ~0x01;} else {keytype[r][c]|= 0x01;send_required=0X20;}
 				if(keytype[r][c]==0x41)FN=0x02;
 			}
 			init_rows();
@@ -65,7 +65,7 @@ void pokerMode(){
 				change=1;
 			}
 			}
-	if(send_required==0X40 && change==1)usb_keyboard_send();
+	if(send_required==0X20 && change==1)usb_keyboard_send();
 	if(send_required==1)usb_keyboard_send();
 	if(send_required>0)send_required-=1;
 		///////////////////////////////////
