@@ -44,7 +44,7 @@ void releaseModifierKeys(uint8_t key)
 {
 	keyboard_modifier_keys&=~key;
 }
-
+#if defined(__AVR_ATmega32U4__)
 void pinMode(uint8_t IO,uint8_t value){
 	switch(IO){
 		case 0: if(value){DDRB|= (1<<0);}else{DDRB &= ~(1<<0);}break;
@@ -134,3 +134,4 @@ uint8_t digitalRead(uint8_t IO){
 	}
 	return value;
 }
+#endif
