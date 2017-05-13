@@ -40,7 +40,7 @@ void init_LED(){
 void LED(){
 	#if(defined MATRIX_XD60_H_)	
 	for ( i=0; i<3; i++){
-		if((keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);break;}
+		if((keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
 	}	
 	 #endif
