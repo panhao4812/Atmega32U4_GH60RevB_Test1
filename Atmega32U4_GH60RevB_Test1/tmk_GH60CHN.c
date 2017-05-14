@@ -31,7 +31,7 @@ uint8_t change=0;
 //keytype ==> 0,mask_FN,mask_ModifierKeys,mask_Codekeys,0,0,pressFN,press_keys
 void init_LED(){
 	#if(defined MATRIX_XD60_H_)
-	for ( i=0; i<3; i++){
+	for ( i=0; i<ledcount; i++){
 		pinMode(ledPins[i],OUTPUT);
 		digitalWrite(ledPins[i],LOW);
 	}
@@ -39,7 +39,7 @@ void init_LED(){
 }
 void LED(){
 	#if(defined MATRIX_XD60_H_)	
-	for ( i=0; i<3; i++){
+	for ( i=0; i<ledcount; i++){
 		if((keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
 	}	

@@ -12,8 +12,9 @@
   
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
-	//                 1  2  3  4  5  6  7 8 9 10 11 12 13 14
-uint8_t ledPins[3]={17,2,16};
+	//                1  2  3  4  5  6  7 8 9 10 11 12 13 14
+	uint8_t ledcount=2;	       
+uint8_t ledPins[3]={18,2};
 /*
   uint8_t LED_caps=2;
   uint8_t LED_GPIO1=17;
