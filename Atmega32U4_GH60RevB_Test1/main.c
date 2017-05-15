@@ -86,7 +86,9 @@ void pokerMode(){
 }
 int main(void) {
 	CPU_PRESCALE(CPU_16MHz);//16M晶振分频设置	
-	closeJtag();//关闭jtag
+	MCUCR = (1<<JTD);
+	MCUCR = (1<<JTD);
+	//关闭jtag
 	usb_init();
 	while (!usb_configured()){_delay_ms(300);}
 	//  TCCR0A = 0x00;
