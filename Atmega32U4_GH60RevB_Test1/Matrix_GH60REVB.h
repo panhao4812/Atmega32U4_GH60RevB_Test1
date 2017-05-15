@@ -1,5 +1,5 @@
-#ifndef MATRIX_GH60CHN_H
-#define MATRIX_GH60CHN_H
+#ifndef MATRIX_GH60REVB_H_
+#define MATRIX_GH60REVB_H_
 
 #define ROWS  5
 #define COLS  14

@@ -1,5 +1,5 @@
-#ifndef FUNCTIONS_H
-#define FUNCTIONS_H
+#ifndef FUNCTIONS_H_
+#define FUNCTIONS_H_
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -35,5 +35,5 @@ void releaseAll();
 uint8_t presskey(uint8_t key);
 void pressModifierKeys(uint8_t key);
 void releaseModifierKeys(uint8_t key);
-
+void closeJtag();
 #endif /* */

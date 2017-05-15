@@ -1,5 +1,5 @@
-#ifndef USB_KEYBOARD_H
-#define USB_KEYBOARD_H
+#ifndef USB_KEYBOARD_H_
+#define USB_KEYBOARD_H_
 
 #include <stdint.h>
 #include <avr/pgmspace.h>

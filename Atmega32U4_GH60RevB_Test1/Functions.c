@@ -45,6 +45,12 @@ void releaseModifierKeys(uint8_t key)
 	keyboard_modifier_keys&=~key;
 }
 #if defined(__AVR_ATmega32U4__)
+void closeJtag(){
+MCUCR = (1<<JTD);
+MCUCR = (1<<JTD);
+
+}
+
 void pinMode(uint8_t IO,uint8_t value){
 	switch(IO){
 		case 0: if(value){DDRB|= (1<<0);}else{DDRB &= ~(1<<0);}break;

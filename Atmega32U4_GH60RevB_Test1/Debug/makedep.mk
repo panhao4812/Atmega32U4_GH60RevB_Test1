@@ -4,7 +4,7 @@
 
 Functions.c
 
-tmk_GH60CHN.c
+main.c
 
 usb_keyboard.c
 

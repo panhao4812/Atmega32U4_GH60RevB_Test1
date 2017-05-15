@@ -85,7 +85,8 @@ void pokerMode(){
 	}
 }
 int main(void) {
-	CPU_PRESCALE(CPU_16MHz);
+	CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√	
+	closeJtag();//πÿ±’jtag
 	usb_init();
 	while (!usb_configured()){_delay_ms(300);}
 	//  TCCR0A = 0x00;
