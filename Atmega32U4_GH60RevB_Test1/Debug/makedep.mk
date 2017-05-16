@@ -8,3 +8,5 @@ main.c
 
 usb_keyboard.c
 
+ws2812.c
+

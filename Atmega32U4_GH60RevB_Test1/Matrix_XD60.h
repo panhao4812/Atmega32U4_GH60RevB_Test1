@@ -15,6 +15,7 @@ uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
 	//                1  2  3  4  5  6  7 8 9 10 11 12 13 14
 #define ledcount 2	       
 uint8_t ledPins[ledcount]={18,2};
+
 /*
   uint8_t LED_caps=2;
   uint8_t LED_GPIO1=17;

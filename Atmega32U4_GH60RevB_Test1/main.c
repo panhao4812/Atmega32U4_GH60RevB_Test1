@@ -7,8 +7,9 @@
 
 #include "Functions.h"
 #include "Matrix_XD60.h"
+#include "ws2812.h"
 
-uint8_t r, c,i;
+uint8_t r,c,i;
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
 //col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3
@@ -28,6 +29,7 @@ void init_rows(){
 uint8_t FN=0;
 uint8_t send_required=0;
 uint8_t change=0;
+uint8_t delayval;
 //keytype ==> 0,mask_FN,mask_ModifierKeys,mask_Codekeys,0,0,pressFN,press_keys
 void init_LED(){
 	#if(defined MATRIX_XD60_H_)
@@ -35,15 +37,34 @@ void init_LED(){
 		pinMode(ledPins[i],OUTPUT);
 		digitalWrite(ledPins[i],LOW);
 	}
+	WS2812Setup();delayval=Maxdelay;
+	WS2812Clear();
+	WS2812Send();
 	#endif
 }
 void LED(){
-	#if(defined MATRIX_XD60_H_)	
+	#if(defined MATRIX_XD60_H_)
 	for ( i=0; i<ledcount; i++){
 		if((keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
 	}	
-	 #endif
+	if(delayval>=Maxdelay){
+		if((keyboard_leds&(1<<2))==(1<<2)){
+			for(char i = 0; i<WS2812_COUNT; i++)
+			{
+				WS2812SetRGB(i, 255, 255, 255);
+			}
+			}else{
+			WS2812Clear();
+		}
+		WS2812Send();
+		delayval--;
+	}
+	else{
+		if(delayval>0 ){delayval--;}
+		else {delayval=Maxdelay;}
+	}	
+	#endif
 }
 void pokerMode(){
 	while (1) {
@@ -84,8 +105,9 @@ void pokerMode(){
 		///////////////////////////////////
 	}
 }
+
 int main(void) {
-	CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√	
+	CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√
 	MCUCR = (1<<JTD);
 	MCUCR = (1<<JTD);
 	//πÿ±’jtag
@@ -110,4 +132,3 @@ ISR(TIMER0_OVF_vect)
 
 }
 */
-
