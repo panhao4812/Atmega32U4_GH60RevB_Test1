@@ -9,6 +9,7 @@
 #include "Matrix_XD60.h"
 #include "ws2812.h"
 
+#define  xd60
 uint8_t r,c,i;
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
@@ -32,7 +33,7 @@ uint8_t change=0;
 uint8_t delayval;
 //keytype ==> 0,mask_FN,mask_ModifierKeys,mask_Codekeys,0,0,pressFN,press_keys
 void init_LED(){
-	#if(defined MATRIX_XD60_H_)
+	#if(defined xd60)
 	for ( i=0; i<ledcount; i++){
 		pinMode(ledPins[i],OUTPUT);
 		digitalWrite(ledPins[i],LOW);
@@ -43,7 +44,7 @@ void init_LED(){
 	#endif
 }
 void LED(){
-	#if(defined MATRIX_XD60_H_)
+	#if(defined xd60)
 	for ( i=0; i<ledcount; i++){
 		if((keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
@@ -52,7 +53,7 @@ void LED(){
 		if((keyboard_leds&(1<<2))==(1<<2)){
 			for(char i = 0; i<WS2812_COUNT; i++)
 			{
-				WS2812SetRGB(i, 255, 255, 255);
+				WS2812SetRGB(i, 50*i, 255-50*i, 50*i);
 			}
 			}else{
 			WS2812Clear();

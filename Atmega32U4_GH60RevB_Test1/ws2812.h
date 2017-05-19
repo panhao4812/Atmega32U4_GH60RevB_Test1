@@ -4,21 +4,14 @@
 #include <avr/io.h>
 #include <stdlib.h>
 
-#if(defined MATRIX_XD60_H_)
-#define WS2812_COUNT	5
+
+#define WS2812_COUNT	6
 #define WS2812_PORT		PORTF
 #define WS2812_DDR		DDRF
 #define WS2812_MASK		(1<<6)
 #define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
 #define Maxdelay 0xFF
-#else
-#define WS2812_COUNT	5
-#define WS2812_PORT		PORTF
-#define WS2812_DDR		DDRF
-#define WS2812_MASK		(1<<6)
-#define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
-#define Maxdelay 0xFF
-#endif
+
 
 #define nop() __asm__ __volatile__ ("nop")
 //ÄÚÇ¶»ã±àÖ¸Áînop ÑÓÊ± 0.25us
