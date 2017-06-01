@@ -42,8 +42,8 @@
 // Windows, even though the driver is supplied by Microsoft, an
 // INF file is needed to load the driver.  These numbers need to
 // match the INF file.
-#define VENDOR_ID		0x16C0//0x16C0
-#define PRODUCT_ID		0x0479//0x047C
+#define VENDOR_ID		0xCCCC//0x16C0
+#define PRODUCT_ID		0x3413//0x047C
 
 
 // USB devices are supposed to implment a halt feature, which is
