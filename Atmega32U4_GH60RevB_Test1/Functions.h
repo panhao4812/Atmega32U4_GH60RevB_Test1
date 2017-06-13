@@ -1,6 +1,7 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
+#define  revB
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
@@ -26,7 +27,16 @@
 #define HIGH 1
 #define INPUT 0
 #define OUTPUT 1
-
+#define ROWS  5
+#define COLS  14
+extern  uint8_t hexaKeys[ROWS][COLS] ;
+extern  uint8_t hexaKeys2[ROWS][COLS];
+extern  uint8_t keymask[ROWS][COLS];
+extern  uint8_t rowPins[ROWS];
+extern  uint8_t colPins[COLS];
+int init_main(void);
+void init_cols();
+void init_rows();
 void pinMode(uint8_t IO,uint8_t value);
 void digitalWrite(uint8_t IO,uint8_t value);
 uint8_t digitalRead(uint8_t IO);

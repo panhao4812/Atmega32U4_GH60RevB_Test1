@@ -6,6 +6,10 @@ Functions.c
 
 main.c
 
+Matrix_GH60REVB.c
+
+Matrix_XD60.c
+
 usb_keyboard.c
 
 ws2812.c

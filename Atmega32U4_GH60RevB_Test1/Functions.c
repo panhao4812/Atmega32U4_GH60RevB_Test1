@@ -140,4 +140,31 @@ uint8_t digitalRead(uint8_t IO){
 	}
 	return value;
 }
+/*
+0		PIN_B0
+1		PIN_B1
+2		PIN_B2
+3		PIN_B3
+4		PIN_B7
+5		PIN_D0
+6		PIN_D1
+7		PIN_D2
+8		PIN_D3
+9		PIN_C6
+10		PIN_C7
+11		PIN_D6
+12		PIN_D7
+13		PIN_B4
+14		PIN_B5
+15		PIN_B6
+16		PIN_F7
+17		PIN_F6
+18		PIN_F5
+19		PIN_F4
+20		PIN_F1
+21		PIN_F0
+22		PIN_D4
+23		PIN_D5
+24		PIN_E6
+*/
 #endif
