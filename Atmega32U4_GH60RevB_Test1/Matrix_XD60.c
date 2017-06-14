@@ -30,9 +30,9 @@ uint8_t hexaKeys[ROWS][COLS] = {
 };
 uint8_t hexaKeys2[ROWS][COLS] = {
 	{KEY_TILDE,KEY_F1,KEY_F2,KEY_F3,KEY_F4,KEY_F5,KEY_F6,KEY_F7,KEY_F8,KEY_F9,KEY_F10,KEY_F11,KEY_F12, KEY_DELETE},
-	{KEY_TAB,0x00,KEY_UP,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,KEY_INSERT},
-	{KEY_CAPS_LOCK, KEY_LEFT,KEY_DOWN,KEY_RIGHT,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,  KEY_ENTER},
-	{KEY_LEFT_SHIFT,0x00,KEY_NUM_LOCK ,KEY_SCROLL_LOCK,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, KEY_UP       },
+	{KEY_TAB,KEYPAD_1,KEYPAD_2,KEYPAD_3,KEYPAD_4,KEYPAD_5,KEYPAD_6,KEYPAD_7,KEYPAD_8,KEYPAD_9,KEYPAD_0,KEYPAD_MINUS,KEYPAD_PLUS,KEY_BACKSLASH},
+	{KEY_CAPS_LOCK, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,  KEY_ENTER},
+	{KEY_LEFT_SHIFT,0x00,KEY_NUM_LOCK ,KEY_SCROLL_LOCK,KEY_INSERT,KEY_PRINTSCREEN,0x00,0x00,0x00,0x00,0x00,0x00,0x00, KEY_UP       },
 	{KEY_LEFT_CTRL,0x00,KEY_LEFT_ALT ,0x00,0x00,KEY_SPACE,0x00,0x00,KEY_LEFT,0x00,0x00,KEY_RIGHT_CTRL,KEY_DOWN, KEY_RIGHT  }
 };
 uint8_t keymask[ROWS][COLS] = {
@@ -44,8 +44,8 @@ uint8_t keymask[ROWS][COLS] = {
 };
 uint8_t r,c,i;
 uint8_t FN=0;
-uint8_t send_required=0;
-uint8_t change=0;
+uint8_t delay_after=0;
+uint8_t delay_before=0;
 uint8_t delayval;
 void init_cols(){
 	for ( i=0; i<COLS; i++){
@@ -102,7 +102,7 @@ void pokerMode(){
 			pinMode(rowPins[r],OUTPUT);
 			digitalWrite(rowPins[r],LOW);
 			for (c = 0; c < COLS; c++) {
-				if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x01;} else {keymask[r][c]|= 0x01;send_required=0X20;}
+				if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x01;} else {keymask[r][c]|= 0x01;delay_after=0X20;}
 				if(keymask[r][c]==0x41)FN=0x02;
 			}
 			init_rows();
@@ -116,20 +116,20 @@ void pokerMode(){
 				else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
 			}
 		}
-		change=0;
 		if(keyboard_modifier_keys2!=keyboard_modifier_keys){
 			keyboard_modifier_keys2=keyboard_modifier_keys;
-			change=1;
+			delay_before=4;
 		}
 		for (i = 0; i < 6; i++) {
 			if(keyboard_keys2[i]!=keyboard_keys[i]){
 				keyboard_keys2[i]=keyboard_keys[i];
-				change=1;
+				delay_before=4;
 			}
 		}
-		if(send_required==0X20 && change==1)usb_keyboard_send();
-		if(send_required==1)usb_keyboard_send();
-		if(send_required>0)send_required-=1;
+		if(delay_after==0X20 && delay_before==1)usb_keyboard_send();
+		if(delay_after==1)usb_keyboard_send();
+		if(delay_after>0)delay_after-=1;
+		if(delay_before>0)delay_before-=1;
 		LED();
 		///////////////////////////////////
 	}
