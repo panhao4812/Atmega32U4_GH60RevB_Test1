@@ -1,7 +1,8 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
-#define  xd60
+//#define  xd60
+#define revB
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
