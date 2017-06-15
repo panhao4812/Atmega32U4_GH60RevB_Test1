@@ -9,7 +9,7 @@
 #ifdef xd60
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
-//col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3
+//col F0, F1, E6, C7, C6, B6, D4, B1, B0, B5, B4, D7, D6, B3
 
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
