@@ -8,7 +8,7 @@
  **************************************************************************/
 // zero when we are not configured, non-zero when enumerated
 static volatile uint8_t usb_configuration=0;
-
+ 
 
 uint8_t releasekey(uint8_t key)
 {
@@ -69,7 +69,7 @@ const uint8_t PROGMEM device_descriptor[] = {
 	0,					// bDeviceClass
 	0,					// bDeviceSubClass
 	0,					// bDeviceProtocol
-	ENDPOINT0_SIZE,				// bMaxPacketSize0
+	64,				// bMaxPacketSize0
 	LSB(VENDOR_ID), MSB(VENDOR_ID),		// idVendor
 	LSB(PRODUCT_ID), MSB(PRODUCT_ID),	// idProduct
 	0x00, 0x01,				// bcdDevice
@@ -78,7 +78,7 @@ const uint8_t PROGMEM device_descriptor[] = {
 	0,					// iSerialNumber
 	1					// bNumConfigurations
 };
-const uint8_t PROGMEM keyboard_hid_report_desc[] = {
+const uint8_t PROGMEM KeyboardReport[] = {
         0x05, 0x01,          // Usage Page (Generic Desktop),
         0x09, 0x06,          // Usage (Keyboard),
         0xA1, 0x01,          // Collection (Application),
@@ -112,45 +112,174 @@ const uint8_t PROGMEM keyboard_hid_report_desc[] = {
         0x81, 0x00,          //   Input (Data, Array),
         0xc0                 // End Collection
 };
-#define CONFIG1_DESC_SIZE        (9+9+9+7)
+#ifdef RAW_ENABLE
+const PROGMEM uint8_t  RawReport[] =
+{
+	0x06, 0x31 ,0xFF,//Usage Page (Vendor-Defined 50 31FF)
+	0x09 ,0x74,//Usage (Vendor-Defined 116)
+	0xA1, 0x01,//Collection (Application)
+	0x09 ,0x75,//Usage (Vendor-Defined 117)
+	0x15 ,0x00,//Logical Minimum (0)
+	0x26, 0xFF ,0x00,//Logical Maximum (255 FF00)
+	0x95 ,RAW_EPSIZE ,//Report Count (8)
+	0x75 ,0x08 ,//Report Size (8)
+	0x81 ,0x02 ,//Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit)
+	0x09 ,0x76 ,//Usage (Vendor-Defined 118)
+	0x15, 0x00 ,//Logical Minimum (0)
+	0x26 ,0xFF ,0x00 ,//Logical Maximum (255)
+	0x95 ,RAW_EPSIZE , //Report Count (8)
+	0x75 ,0x08 ,//Report Size (8)
+	0x91 ,0x02, //Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit)
+	0xC0 //End Collection
+};
+#endif
+#ifdef MOUSE_ENABLE
+const  PROGMEM  uint8_t MouseReport[] =
+{
+	/* mouse */
+	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+	0x09, 0x02,                    // USAGE (Mouse)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID_MOUSE,         //   REPORT_ID (1)
+	0x09, 0x01,                    //   USAGE (Pointer)
+	0xa1, 0x00,                    //   COLLECTION (Physical)
+	// ----------------------------  Buttons
+	0x05, 0x09,                    //     USAGE_PAGE (Button)
+	0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
+	0x29, 0x05,                    //     USAGE_MAXIMUM (Button 5)
+	0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
+	0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
+	0x75, 0x01,                    //     REPORT_SIZE (1)
+	0x95, 0x05,                    //     REPORT_COUNT (5)
+	0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+	0x75, 0x03,                    //     REPORT_SIZE (3)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
+	// ----------------------------  X,Y position
+	0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
+	0x09, 0x30,                    //     USAGE (X)
+	0x09, 0x31,                    //     USAGE (Y)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x02,                    //     REPORT_COUNT (2)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	// ----------------------------  Vertical wheel
+	0x09, 0x38,                    //     USAGE (Wheel)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x35, 0x00,                    //     PHYSICAL_MINIMUM (0)        - reset physical
+	0x45, 0x00,                    //     PHYSICAL_MAXIMUM (0)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	// ----------------------------  Horizontal wheel
+	0x05, 0x0c,                    //     USAGE_PAGE (Consumer Devices)
+	0x0a, 0x38, 0x02,              //     USAGE (AC Pan)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	0xc0,                          //   END_COLLECTION
+	0xc0,                          // END_COLLECTION
+	/* system control */
+	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+	0x09, 0x80,                    // USAGE (System Control)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID_SYSTEM,        //   REPORT_ID (2)
+	0x15, 0x01,                    //   LOGICAL_MINIMUM (0x1)
+	0x26, 0xb7, 0x00,              //   LOGICAL_MAXIMUM (0xb7)
+	0x19, 0x01,                    //   USAGE_MINIMUM (0x1)
+	0x29, 0xb7,                    //   USAGE_MAXIMUM (0xb7)
+	0x75, 0x10,                    //   REPORT_SIZE (16)
+	0x95, 0x01,                    //   REPORT_COUNT (1)
+	0x81, 0x00,                    //   INPUT (Data,Array,Abs)
+	0xc0,                          // END_COLLECTION
+	/* consumer */
+	0x05, 0x0c,                    // USAGE_PAGE (Consumer Devices)
+	0x09, 0x01,                    // USAGE (Consumer Control)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID_CONSUMER,      //   REPORT_ID (3)
+	0x15, 0x01,                    //   LOGICAL_MINIMUM (0x1)
+	0x26, 0x9c, 0x02,              //   LOGICAL_MAXIMUM (0x29c)
+	0x19, 0x01,                    //   USAGE_MINIMUM (0x1)
+	0x2a, 0x9c, 0x02,              //   USAGE_MAXIMUM (0x29c)
+	0x75, 0x10,                    //   REPORT_SIZE (16)
+	0x95, 0x01,                    //   REPORT_COUNT (1)
+	0x81, 0x00,                    //   INPUT (Data,Array,Abs)
+	0xc0                        // END_COLLECTION
+};
+#endif
+
+#define CONFIG1_DESC_SIZE        (9+9+9+7 )
 #define KEYBOARD_HID_DESC_OFFSET (9+9)
 const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
-	// configuration descriptor, USB spec 9.6.3, page 264-266, Table 9-10
-	9, 					// bLength;
-	2,					// bDescriptorType;
-	LSB(CONFIG1_DESC_SIZE),			// wTotalLength
-	MSB(CONFIG1_DESC_SIZE),
-	1,					// bNumInterfaces
-	1,					// bConfigurationValue
-	0,					// iConfiguration
-	0xC0,					// bmAttributes
-	50,					// bMaxPower
-	// interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
-	9,					// bLength
-	4,					// bDescriptorType
-	KEYBOARD_INTERFACE,			// bInterfaceNumber
-	0,					// bAlternateSetting
-	1,					// bNumEndpoints
-	0x03,					// bInterfaceClass (0x03 = HID)
-	0x01,					// bInterfaceSubClass (0x01 = Boot)
-	0x01,					// bInterfaceProtocol (0x01 = Keyboard)
-	0,					// iInterface
-	// HID interface descriptor, HID 1.11 spec, section 6.2.1
-	9,					// bLength
-	0x21,					// bDescriptorType
-	0x11, 0x01,				// bcdHID
-	0,					// bCountryCode
-	1,					// bNumDescriptors
-	0x22,					// bDescriptorType
-	sizeof(keyboard_hid_report_desc),	// wDescriptorLength
-	0,
-	// endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-	7,					// bLength
-	5,					// bDescriptorType
-	KEYBOARD_ENDPOINT | 0x80,		// bEndpointAddress
-	0x03,					// bmAttributes (0x03=intr)
-	KEYBOARD_SIZE, 0,			// wMaxPacketSize
-	1					// bInterval
+	9,
+	0x02,
+	0x42,0x00, //9+(9+9+7)+(9+9+7+7)
+	0x02,          /* number of interfaces in this configuration */
+	1,          /* index of this configuration */
+	0,          /* configuration name string index */
+	0xA0,
+	100/2, /* max USB current in 2mA units */
+	//Interface Descriptor 0/0 HID, 1 Endpoint
+	9,          /* sizeof(usbDescrInterface): length of descriptor in bytes */
+	0x04, /* descriptor type */
+	0,          /* index of this interface */
+	0,          /* alternate setting for this interface */
+	0x01,
+	0x03,
+	0x01,
+	0x01,
+	0,          /* string index for interface */
+	//HID descriptor
+	9,          /* sizeof(usbDescrHID): length of descriptor in bytes */
+	0x21,   /* descriptor type: HID */
+	0x01, 0x11, /* BCD representation of HID version */
+	0x00,       /* target country code */
+	0x01,       /* number of HID Report (or other HID class) Descriptor infos to follow */
+	0x22,       /* descriptor type: report */
+	sizeof(KeyboardReport), 0x00,  /* total length of report descriptor */
+	//endpoint descriptor for endpoint 1
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x81, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	0x08,0x00,       /* maximum packet size */
+	1, /* in ms */
+	//Interface Descriptor 1/0 HID, 2 Endpoints
+	0x09,
+	0x04,
+	0x01,
+	0x00,
+	0x02,
+	0x03,
+	0x00,
+	0x00,
+	0x00,
+	//HID descriptor
+	0x09,
+	0x21,
+	0x01,0x11,
+	0x00,
+	0x01,
+	0x22,
+	sizeof(RawReport),0x00,
+	//endpoint descriptor for endpoint 1
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x82, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	0x08,0x00,       /* maximum packet size */
+	0x01, /* in ms */
+	//endpoint descriptor for endpoint 1
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x03, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	0x08,0x00,       /* maximum packet size */
+	0x01, /* in ms */
 };
 struct usb_string_descriptor_struct {
 	uint8_t bLength;
@@ -181,7 +310,7 @@ const struct descriptor_list_struct {
 } PROGMEM descriptor_list[] = {
 	{0x0100, 0x0000, device_descriptor, sizeof(device_descriptor)},
 	{0x0200, 0x0000, config1_descriptor, sizeof(config1_descriptor)},
-	{0x2200, KEYBOARD_INTERFACE, keyboard_hid_report_desc, sizeof(keyboard_hid_report_desc)},
+	{0x2200, KEYBOARD_INTERFACE, KeyboardReport, sizeof(KeyboardReport)},
 	{0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
 	{0x0300, 0x0000, (const uint8_t *)&string0, 4},
 	{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},

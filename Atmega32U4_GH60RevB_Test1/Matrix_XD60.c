@@ -1,9 +1,3 @@
-/*
-* tmk_GH60CHN.c
-*
-*  Created on: 2014Äê7ÔÂ25ÈÕ
-*      Author: zian1
-*/
 #include "Functions.h"
 #include "ws2812.h"
 #ifdef xd60

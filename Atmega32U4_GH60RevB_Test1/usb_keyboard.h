@@ -8,14 +8,17 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#define RAW_ENABLE
 #define STR_MANUFACTURER	L"zian1"
 #define STR_PRODUCT		L"zian_keyboard"
 #define VENDOR_ID		0xCCCC//0x16C0
 #define PRODUCT_ID		0x3413//0x047C
 #define SUPPORT_ENDPOINT_HALT
 #define ENDPOINT0_SIZE		32
+
 #define KEYBOARD_INTERFACE	0
-#define KEYBOARD_ENDPOINT	3
+#define KEYBOARD_ENDPOINT	1
+
 #define KEYBOARD_SIZE		8
 #define KEYBOARD_BUFFER		EP_DOUBLE_BUFFER
 #define RAW_EPSIZE  8
