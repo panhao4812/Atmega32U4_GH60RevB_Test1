@@ -1,14 +1,10 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
-//#define  xd60
-#define revB
-#include <avr/io.h>
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
+#define  xd60
+//#define revB
 #include "usb_keyboard.h"
-
+//////////////////////atmega32U4//////////////////////////
 #define LED_CONFIG	(DDRE |= (1<<6))
 #define LED_OFF		(PORTE &= ~(1<<6))
 #define LED_ON	(PORTE |= (1<<6))
@@ -28,6 +24,13 @@
 #define HIGH 1
 #define INPUT 0
 #define OUTPUT 1
+
+void pinMode(uint8_t IO,uint8_t value);
+void digitalWrite(uint8_t IO,uint8_t value);
+uint8_t digitalRead(uint8_t IO);
+void closeJtag();
+//////////////////////override//////////////////////////
+
 #define ROWS  5
 #define COLS  14
 extern  uint8_t hexaKeys[ROWS][COLS] ;
@@ -35,16 +38,13 @@ extern  uint8_t hexaKeys2[ROWS][COLS];
 extern  uint8_t keymask[ROWS][COLS];
 extern  uint8_t rowPins[ROWS];
 extern  uint8_t colPins[COLS];
+extern uint8_t delay_after;
+extern uint8_t delay_before;
 int init_main(void);
 void init_cols();
 void init_rows();
-void pinMode(uint8_t IO,uint8_t value);
-void digitalWrite(uint8_t IO,uint8_t value);
-uint8_t digitalRead(uint8_t IO);
-uint8_t releasekey(uint8_t key);
-void releaseAll();
-uint8_t presskey(uint8_t key);
-void pressModifierKeys(uint8_t key);
-void releaseModifierKeys(uint8_t key);
-void closeJtag();
+void init_LED();
+void pokerMode();
+
+////////////////////////////////////////////////////////
 #endif /* */

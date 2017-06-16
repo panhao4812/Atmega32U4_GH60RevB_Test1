@@ -3,17 +3,104 @@
 
 #include <stdint.h>
 #include <avr/pgmspace.h>
+#include <string.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+
+#define STR_MANUFACTURER	L"zian1"
+#define STR_PRODUCT		L"zian_keyboard"
+#define VENDOR_ID		0xCCCC//0x16C0
+#define PRODUCT_ID		0x3413//0x047C
+#define SUPPORT_ENDPOINT_HALT
+#define ENDPOINT0_SIZE		32
+#define KEYBOARD_INTERFACE	0
+#define KEYBOARD_ENDPOINT	3
+#define KEYBOARD_SIZE		8
+#define KEYBOARD_BUFFER		EP_DOUBLE_BUFFER
+#define RAW_EPSIZE  8
 
 void usb_init(void);			// initialize everything
 uint8_t usb_configured(void);		// is the USB port configured
 
-int8_t usb_keyboard_press(uint8_t key, uint8_t modifier);
-int8_t usb_keyboard_send(void);
-extern uint8_t keyboard_modifier_keys;
-extern uint8_t keyboard_keys[6];
-extern uint8_t keyboard_modifier_keys2;
-extern uint8_t keyboard_keys2[6];
-extern volatile uint8_t keyboard_leds;
+uint8_t releasekey(uint8_t key);
+void releaseAll();
+uint8_t presskey(uint8_t key);
+void pressModifierKeys(uint8_t key);
+void releaseModifierKeys(uint8_t key);
+
+void ClearKeyboard();
+void ClearMouse();
+void ClearRaw();	
+uint8_t usb_keyboard_send_required(void);		// initialize everything
+uint8_t usb_keyboard_send();
+uint8_t usb_mouse_send();
+uint8_t usb_raw_send();
+
+typedef struct {
+	uint8_t report_id;
+	uint8_t buttons;
+	int8_t x;
+	int8_t y;
+	int8_t v;
+	int8_t h;
+} __attribute__ ((packed)) report_mouse0_t;
+typedef struct {
+	uint8_t  report_id;
+	uint16_t usage;
+} __attribute__ ((packed)) report_extra_t;
+typedef struct {
+	uint8_t send_required;
+	report_mouse0_t mouse;
+	report_extra_t system_keys;
+	report_extra_t consumer_keys;
+} __attribute__ ((packed)) report_mouse_t;
+typedef struct {
+	uint8_t modifier;
+	uint8_t reserved;
+	uint8_t keycode[6];
+}__attribute__ ((packed))  report_keyboard_t;
+typedef  union  {
+	uint16_t      word[RAW_EPSIZE/2];
+	uint8_t       bytes[RAW_EPSIZE];
+}__attribute__ ((packed))report_raw_t;
+
+typedef struct {
+	uint8_t mouse_keys;
+	int8_t x;
+	int8_t y;
+	int8_t v;
+	int8_t h;
+	uint16_t system_keys;
+	uint16_t consumer_keys;
+} __attribute__ ((packed)) buffer_mouse_t;
+typedef struct {
+	uint8_t keyboard_modifier_keys;
+	uint8_t keyboard_keys[6];
+	uint8_t keyboard_leds;
+	uint8_t enable_pressing;
+	// the idle configuration, how often we send the report to the
+	// host (ms * 4) even when it hasn't changed
+	uint8_t keyboard_idle_config;
+	uint8_t keyboard_idle_count;
+	// protocol setting from the host.  We use exactly the same report
+	// either way, so this variable only stores the setting since we
+	// are required to be able to report which setting is in use
+	uint8_t keyboard_protocol;
+
+}__attribute__ ((packed))  buffer_keyboard_t;
+
+#ifdef MOUSE_ENABLE
+report_mouse_t mouse_report;
+buffer_mouse_t mouse_buffer;
+#endif
+#ifdef RAW_ENABLE
+#define maxEEP (uint16_t)511
+report_raw_t raw_report_in;
+report_raw_t raw_report_out;
+#endif
+ report_keyboard_t keyboard_report;
+ buffer_keyboard_t keyboard_buffer;
 
 // This file does not include the HID debug functions, so these empty
 // macros replace them with nothing, so users can compile code that
@@ -132,26 +219,17 @@ extern volatile uint8_t keyboard_leds;
 #define KEYPAD_0	98		
 #define KEYPAD_PERIOD	99		//.
 
+#define MOUSE_LEFT	1<<0
+#define MOUSE_RIGHT	1<<1
+#define MOUSE_MID	1<<2
+#define MOUSE_4	1<<3
+#define MOUSE_5	1<<4
 
-/*      const uint8_t  Keypad_NumLock=0x53;
-		const uint8_t  Keypad_Divide=0x54;
-		const uint8_t  Keypad_Muti=0x55;
-		const uint8_t  Keypad_minus=0x56;
-		const uint8_t  Keypad_plus=0x57;
-		const uint8_t  Keypad_ENTER=0x58;
-		const uint8_t  Keypad_1=0x59;
-		const uint8_t  Keypad_2=0x5A;
-		const uint8_t  Keypad_3=0x5B;
-		const uint8_t  Keypad_4=0x5C;
-		const uint8_t  Keypad_5=0x5D;
-		const uint8_t  Keypad_6=0x5E;
-		const uint8_t  Keypad_7=0x5F;
-		const uint8_t  Keypad_8=0x60;
-		const uint8_t  Keypad_9=0x61;
-		const uint8_t  Keypad_0=0x62;
-		const uint8_t  Keypad_dot=0x63;
-*/
+#define REPORT_ID_MOUSE     1
+#define REPORT_ID_SYSTEM    2
+#define REPORT_ID_CONSUMER  3
 // Everything below this point is only intended for usb_serial.c
+#define USB_SERIAL_PRIVATE_INCLUDE
 #ifdef USB_SERIAL_PRIVATE_INCLUDE
 #include <avr/io.h>
 #include <avr/pgmspace.h>

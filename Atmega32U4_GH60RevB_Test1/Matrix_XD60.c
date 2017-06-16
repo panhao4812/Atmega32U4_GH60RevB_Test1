@@ -74,11 +74,11 @@ void init_LED(){
 void LED(){
 	#if(defined xd60)
 	for ( i=0; i<ledcount; i++){
-		if((keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
+		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
 	}
 	if(delayval>=Maxdelay){
-		if((keyboard_leds&(1<<2))==(1<<2)){
+		if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2)){
 			for(char i = 0; i<WS2812_COUNT; i++)
 			{
 				WS2812SetRGB(i, 50*i, 255-50*i, 50*i);
@@ -116,16 +116,8 @@ void pokerMode(){
 				else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
 			}
 		}
-		if(keyboard_modifier_keys2!=keyboard_modifier_keys){
-			keyboard_modifier_keys2=keyboard_modifier_keys;
-			delay_before=4;
-		}
-		for (i = 0; i < 6; i++) {
-			if(keyboard_keys2[i]!=keyboard_keys[i]){
-				keyboard_keys2[i]=keyboard_keys[i];
-				delay_before=4;
-			}
-		}
+
+		if(usb_keyboard_send_required())delay_before=4	;
 		if(delay_after==0X20 && delay_before==1)usb_keyboard_send();
 		if(delay_after==1)usb_keyboard_send();
 		if(delay_after>0)delay_after-=1;

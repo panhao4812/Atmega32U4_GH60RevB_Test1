@@ -1,72 +1,60 @@
-/* USB Keyboard Example for Teensy USB Development Board
- * http://www.pjrc.com/teensy/usb_keyboard.html
- * Copyright (c) 2009 PJRC.COM, LLC
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 
-// Version 1.0: Initial Release
-// Version 1.1: Add support for Teensy 2.0
-
-#define USB_SERIAL_PRIVATE_INCLUDE
 #include "usb_keyboard.h"
 
 /**************************************************************************
  *
- *  Configurable Options
+ *  Variables - these are the only non-stack RAM usage
  *
  **************************************************************************/
-
-// You can change these to give your code its own name.
-#define STR_MANUFACTURER	L"zian1"
-#define STR_PRODUCT		L"zian_keyboard"
+// zero when we are not configured, non-zero when enumerated
+static volatile uint8_t usb_configuration=0;
 
 
-// Mac OS-X and Linux automatically load the correct drivers.  On
-// Windows, even though the driver is supplied by Microsoft, an
-// INF file is needed to load the driver.  These numbers need to
-// match the INF file.
-#define VENDOR_ID		0xCCCC//0x16C0
-#define PRODUCT_ID		0x3413//0x047C
-
-
-// USB devices are supposed to implment a halt feature, which is
-// rarely (if ever) used.  If you comment this line out, the halt
-// code will be removed, saving 102 bytes of space (gcc 4.3.0).
-// This is not strictly USB compliant, but works with all major
-// operating systems.
-#define SUPPORT_ENDPOINT_HALT
-
-
-
-/**************************************************************************
- *
- *  Endpoint Buffer Configuration
- *
- **************************************************************************/
-
-#define ENDPOINT0_SIZE		32
-
-#define KEYBOARD_INTERFACE	0
-#define KEYBOARD_ENDPOINT	3
-#define KEYBOARD_SIZE		8
-#define KEYBOARD_BUFFER		EP_DOUBLE_BUFFER
+uint8_t releasekey(uint8_t key)
+{
+	uint8_t i;
+	uint8_t send_required=0;
+	for ( i=0; i < 6; i++) {
+		if (keyboard_buffer.keyboard_keys[i] == key) {
+			keyboard_buffer.keyboard_keys[i] = 0;
+			send_required=1;
+			break;
+		}
+	}
+	return send_required;
+}
+void releaseAll()
+{
+	uint8_t i;
+	for ( i=0; i < 6; i++) {
+		keyboard_buffer.keyboard_keys[i] = 0;
+	}
+	keyboard_buffer.keyboard_modifier_keys=0;
+}
+uint8_t presskey(uint8_t key)
+{
+	uint8_t i;
+	for ( i=0; i < 6; i++) {
+		if (keyboard_buffer.keyboard_keys[i] == key) {
+			return 1;
+		}
+	}
+	for ( i=0; i < 6; i++) {
+		if (keyboard_buffer.keyboard_keys[i] == 0) {
+			keyboard_buffer.keyboard_keys[i] = key;
+			return 1;
+		}
+	}
+	return 0;
+}
+void pressModifierKeys(uint8_t key)
+{
+	keyboard_buffer.keyboard_modifier_keys|=key;
+}
+void releaseModifierKeys(uint8_t key)
+{
+	keyboard_buffer.keyboard_modifier_keys&=~key;
+}
 
 static const uint8_t PROGMEM endpoint_config_table[] = {
 	0,
@@ -74,21 +62,6 @@ static const uint8_t PROGMEM endpoint_config_table[] = {
 	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
 	0
 };
-
-
-/**************************************************************************
- *
- *  Descriptor Data
- *
- **************************************************************************/
-
-// Descriptors are the data that your computer reads when it auto-detects
-// this USB device (called "enumeration" in USB lingo).  The most commonly
-// changed items are editable at the top of this file.  Changing things
-// in here should only be done by those who've read chapter 9 of the USB
-// spec and relevant portions of any USB class specifications!
-
-
 const uint8_t PROGMEM device_descriptor[] = {
 	18,					// bLength
 	1,					// bDescriptorType
@@ -105,8 +78,6 @@ const uint8_t PROGMEM device_descriptor[] = {
 	0,					// iSerialNumber
 	1					// bNumConfigurations
 };
-
-// Keyboard Protocol 1, HID 1.11 spec, Appendix B, page 59-60
 const uint8_t PROGMEM keyboard_hid_report_desc[] = {
         0x05, 0x01,          // Usage Page (Generic Desktop),
         0x09, 0x06,          // Usage (Keyboard),
@@ -141,7 +112,6 @@ const uint8_t PROGMEM keyboard_hid_report_desc[] = {
         0x81, 0x00,          //   Input (Data, Array),
         0xc0                 // End Collection
 };
-
 #define CONFIG1_DESC_SIZE        (9+9+9+7)
 #define KEYBOARD_HID_DESC_OFFSET (9+9)
 const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
@@ -182,10 +152,6 @@ const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
 	KEYBOARD_SIZE, 0,			// wMaxPacketSize
 	1					// bInterval
 };
-
-// If you're desperate for a little extra code memory, these strings
-// can be completely removed if iManufacturer, iProduct, iSerialNumber
-// in the device desciptor are changed to zeros.
 struct usb_string_descriptor_struct {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -207,8 +173,6 @@ const struct usb_string_descriptor_struct PROGMEM string2 = {
 	STR_PRODUCT
 };
 
-// This table defines which descriptor data is sent for each specific
-// request from the host (in wValue and wIndex).
 const struct descriptor_list_struct {
 	uint16_t	wValue;
 	uint16_t	wIndex;
@@ -228,45 +192,41 @@ const struct descriptor_list_struct {
 
 /**************************************************************************
  *
- *  Variables - these are the only non-stack RAM usage
- *
- **************************************************************************/
-
-// zero when we are not configured, non-zero when enumerated
-static volatile uint8_t usb_configuration=0;
-
-// which modifier keys are currently pressed
-// 1=left ctrl,    2=left shift,   4=left alt,    8=left gui
-// 16=right ctrl, 32=right shift, 64=right alt, 128=right gui
-uint8_t keyboard_modifier_keys=0;
-uint8_t keyboard_modifier_keys2=0;
-// which keys are currently pressed, up to 6 keys may be down at once
-uint8_t keyboard_keys[6]={0,0,0,0,0,0};
-uint8_t keyboard_keys2[6]={0,0,0,0,0,0};
-// protocol setting from the host.  We use exactly the same report
-// either way, so this variable only stores the setting since we
-// are required to be able to report which setting is in use.
-static uint8_t keyboard_protocol=1;
-
-// the idle configuration, how often we send the report to the
-// host (ms * 4) even when it hasn't changed
-static uint8_t keyboard_idle_config=125;
-
-// count until idle timeout
-static uint8_t keyboard_idle_count=0;
-
-// 1=num lock, 2=caps lock, 4=scroll lock, 8=compose, 16=kana
-volatile uint8_t keyboard_leds=0;
-
-
-/**************************************************************************
- *
  *  Public Functions - these are the API intended for the user
  *
  **************************************************************************/
 
 
 // initialize USB
+void ClearMouse(){
+	#ifdef MOUSE_ENABLE
+	memset(&mouse_report, 0, sizeof(mouse_report));
+	memset(&mouse_buffer,0,sizeof(mouse_buffer));
+	mouse_report.mouse.report_id= REPORT_ID_MOUSE;
+	mouse_report.system_keys.report_id= REPORT_ID_SYSTEM;
+	mouse_report.consumer_keys.report_id= REPORT_ID_CONSUMER;
+	#endif
+}
+void ClearKeyboard(){
+	memset( &keyboard_report, 0,sizeof(keyboard_report));
+	memset( &keyboard_buffer, 0,sizeof(keyboard_buffer));
+	keyboard_buffer.enable_pressing=1;
+	// protocol setting from the host.  We use exactly the same report
+	// either way, so this variable only stores the setting since we
+	// are required to be able to report which setting is in use.
+	keyboard_buffer.keyboard_protocol=1;
+	// the idle configuration, how often we send the report to the
+	// host (ms * 4) even when it hasn't changed
+	keyboard_buffer.keyboard_idle_config=125;
+	// count until idle timeout
+	keyboard_buffer.keyboard_idle_count=0;
+}
+void ClearRaw(){
+	#ifdef RAW_ENABLE
+	memset( &raw_report_in, 0,sizeof(raw_report_in));
+	memset(&raw_report_out, 0,sizeof(raw_report_out));
+	#endif
+}
 void usb_init(void)
 {
 	HW_CONFIG();
@@ -279,35 +239,18 @@ void usb_init(void)
         UDIEN = (1<<EORSTE)|(1<<SOFE);
 	sei();
 }
-
 // return 0 if the USB is not configured, or the configuration
 // number selected by the HOST
 uint8_t usb_configured(void)
 {
 	return usb_configuration;
 }
-
-
-// perform a single keystroke
-int8_t usb_keyboard_press(uint8_t key, uint8_t modifier)
-{
-	int8_t r;
-
-	keyboard_modifier_keys = modifier;
-	keyboard_keys[0] = key;
-	r = usb_keyboard_send();
-	if (r) return r;
-	keyboard_modifier_keys = 0;
-	keyboard_keys[0] = 0;
-	return usb_keyboard_send();
-}
-
 // send the contents of keyboard_keys and keyboard_modifier_keys
-int8_t usb_keyboard_send(void)
+uint8_t usb_keyboard_send(void)
 {
 	uint8_t i, intr_state, timeout;
 
-	if (!usb_configuration) return -1;
+	if (!usb_configuration) return 1;
 	intr_state = SREG;
 	cli();
 	UENUM = KEYBOARD_ENDPOINT;
@@ -317,33 +260,39 @@ int8_t usb_keyboard_send(void)
 		if (UEINTX & (1<<RWAL)) break;
 		SREG = intr_state;
 		// has the USB gone offline?
-		if (!usb_configuration) return -1;
+		if (!usb_configuration) return 1;
 		// have we waited too long?
-		if (UDFNUML == timeout) return -1;
+		if (UDFNUML == timeout) return 1;
 		// get ready to try checking again
 		intr_state = SREG;
 		cli();
 		UENUM = KEYBOARD_ENDPOINT;
 	}
-	UEDATX = keyboard_modifier_keys;
-	UEDATX = 0;
+	UEDATX=keyboard_report.modifier;UEDATX=keyboard_report.reserved;
 	for (i=0; i<6; i++) {
-		UEDATX = keyboard_keys[i];
+		UEDATX = keyboard_report.keycode[i];
 	}
 	UEINTX = 0x3A;
-	keyboard_idle_count = 0;
+	keyboard_buffer.keyboard_idle_count = 0;
 	SREG = intr_state;
 	return 0;
 }
-
+uint8_t usb_keyboard_send_required(){
+	uint8_t send_required=0;
+		if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys){keyboard_report.modifier = keyboard_buffer.keyboard_modifier_keys;send_required=1;}
+		if(keyboard_report.keycode[0]!=keyboard_buffer.keyboard_keys[0]){keyboard_report.keycode[0]=keyboard_buffer.keyboard_keys[0];send_required=1;}
+		if(keyboard_report.keycode[1]!=keyboard_buffer.keyboard_keys[1]){keyboard_report.keycode[1]=keyboard_buffer.keyboard_keys[1];send_required=1;}
+		if(keyboard_report.keycode[2]!=keyboard_buffer.keyboard_keys[2]){keyboard_report.keycode[2]=keyboard_buffer.keyboard_keys[2];send_required=1;}
+		if(keyboard_report.keycode[3]!=keyboard_buffer.keyboard_keys[3]){keyboard_report.keycode[3]=keyboard_buffer.keyboard_keys[3];send_required=1;}
+		if(keyboard_report.keycode[4]!=keyboard_buffer.keyboard_keys[4]){keyboard_report.keycode[4]=keyboard_buffer.keyboard_keys[4];send_required=1;}
+		if(keyboard_report.keycode[5]!=keyboard_buffer.keyboard_keys[5]){keyboard_report.keycode[5]=keyboard_buffer.keyboard_keys[5];send_required=1;}
+	return send_required;
+}
 /**************************************************************************
  *
  *  Private Functions - not intended for general user consumption....
  *
  **************************************************************************/
-
-
-
 // USB Device Interrupt - handle all device-level events
 // the transmit buffer flushing is triggered by the start of frame
 //
@@ -363,16 +312,15 @@ ISR(USB_GEN_vect)
 		usb_configuration = 0;
         }
 	if ((intbits & (1<<SOFI)) && usb_configuration) {
-		if (keyboard_idle_config && (++div4 & 3) == 0) {
+		if (keyboard_buffer.keyboard_idle_config && (++div4 & 3) == 0) {
 			UENUM = KEYBOARD_ENDPOINT;
 			if (UEINTX & (1<<RWAL)) {
-				keyboard_idle_count++;
-				if (keyboard_idle_count == keyboard_idle_config) {
-					keyboard_idle_count = 0;
-					UEDATX = keyboard_modifier_keys;
-					UEDATX = 0;
+				keyboard_buffer.keyboard_idle_count++;
+				if (keyboard_buffer.keyboard_idle_count == keyboard_buffer.keyboard_idle_config) {
+					keyboard_buffer.keyboard_idle_count = 0;					
+					UEDATX=keyboard_report.modifier;UEDATX=keyboard_report.reserved;
 					for (i=0; i<6; i++) {
-						UEDATX = keyboard_keys[i];
+						UEDATX = keyboard_report.keycode[i];
 					}
 					UEINTX = 0x3A;
 				}
@@ -434,6 +382,7 @@ ISR(USB_COM_vect)
                 wLength = UEDATX;
                 wLength |= (UEDATX << 8);
                 UEINTX = ~((1<<RXSTPI) | (1<<RXOUTI) | (1<<TXINI));
+			//////////////////////////////////////////////////
                 if (bRequest == GET_DESCRIPTOR) {
 			list = (const uint8_t *)descriptor_list;
 			for (i=0; ; i++) {
@@ -458,6 +407,7 @@ ISR(USB_COM_vect)
 				desc_length = pgm_read_byte(list);
 				break;
 			}
+			/////////////////////////////////////////////////////////
 			len = (wLength < 256) ? wLength : 255;
 			if (len > desc_length) len = desc_length;
 			do {
@@ -543,23 +493,22 @@ ISR(USB_COM_vect)
 			if (bmRequestType == 0xA1) {
 				if (bRequest == HID_GET_REPORT) {
 					usb_wait_in_ready();
-					UEDATX = keyboard_modifier_keys;
-					UEDATX = 0;
+					UEDATX=keyboard_report.modifier;UEDATX=keyboard_report.reserved;
 					for (i=0; i<6; i++) {
-						UEDATX = keyboard_keys[i];
+						UEDATX = keyboard_report.keycode[i];
 					}
 					usb_send_in();
 					return;
 				}
 				if (bRequest == HID_GET_IDLE) {
 					usb_wait_in_ready();
-					UEDATX = keyboard_idle_config;
+					UEDATX = keyboard_buffer.keyboard_idle_config;
 					usb_send_in();
 					return;
 				}
 				if (bRequest == HID_GET_PROTOCOL) {
 					usb_wait_in_ready();
-					UEDATX = keyboard_protocol;
+					UEDATX = keyboard_buffer.keyboard_protocol;
 					usb_send_in();
 					return;
 				}
@@ -567,19 +516,19 @@ ISR(USB_COM_vect)
 			if (bmRequestType == 0x21) {
 				if (bRequest == HID_SET_REPORT) {
 					usb_wait_receive_out();
-					keyboard_leds = UEDATX;
+					keyboard_buffer.keyboard_leds = UEDATX;
 					usb_ack_out();
 					usb_send_in();
 					return;
 				}
 				if (bRequest == HID_SET_IDLE) {
-					keyboard_idle_config = (wValue >> 8);
-					keyboard_idle_count = 0;
+					keyboard_buffer.keyboard_idle_config = (wValue >> 8);
+					keyboard_buffer.keyboard_idle_count = 0;
 					usb_send_in();
 					return;
 				}
 				if (bRequest == HID_SET_PROTOCOL) {
-					keyboard_protocol = wValue;
+					keyboard_buffer.keyboard_protocol = wValue;
 					usb_send_in();
 					return;
 				}

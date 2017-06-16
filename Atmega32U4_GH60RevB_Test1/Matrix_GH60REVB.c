@@ -74,24 +74,14 @@ void pokerMode(){
 				else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
 			}
 		}
-		if(keyboard_modifier_keys2!=keyboard_modifier_keys){
-			keyboard_modifier_keys2=keyboard_modifier_keys;
-			delay_before=4;
-		}
-		for (i = 0; i < 6; i++) {
-			if(keyboard_keys2[i]!=keyboard_keys[i]){
-				keyboard_keys2[i]=keyboard_keys[i];
-				delay_before=4;
-			}
-		}
+
+		if(usb_keyboard_send_required())delay_before=4
 		if(delay_after==0X20 && delay_before==1)usb_keyboard_send();
 		if(delay_after==1)usb_keyboard_send();
 		if(delay_after>0)delay_after-=1;
 		if(delay_before>0)delay_before-=1;
-		///////////////////////////////////
-	}
 }
-
+}
 int init_main(void) {
 	CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√
 	MCUCR = (1<<JTD);

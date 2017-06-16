@@ -1,54 +1,11 @@
 #include "Functions.h"
 #include <string.h>
 
-uint8_t releasekey(uint8_t key)
-{uint8_t i=0;
-	uint8_t send_required=0;
-	for ( i=0; i < 6; i++) {
-		if (keyboard_keys[i] == key) {
-			keyboard_keys[i] = 0;
-			send_required=1;
-			break;
-		}
-	}
-	return send_required;
-}
-void releaseAll()
-{
-	memset(keyboard_keys,0,6);
-	keyboard_modifier_keys=0;
-}
-uint8_t presskey(uint8_t key)
-{uint8_t i=0;
-	uint8_t send_required=0;
-	for ( i=0; i < 6; i++) {
-		if (keyboard_keys[i] == key) {
-			send_required = 1;
-			return send_required;
-		}
-	}
-	for ( i=0; i < 6; i++) {
-		if (keyboard_keys[i] == 0) {
-			keyboard_keys[i] = key;
-			send_required = 1;
-			return send_required;
-		}
-	}
-	return send_required;
-}
-void pressModifierKeys(uint8_t key)
-{
-	keyboard_modifier_keys|=key;
-}
-void releaseModifierKeys(uint8_t key)
-{
-	keyboard_modifier_keys&=~key;
-}
+
 #if defined(__AVR_ATmega32U4__)
 void closeJtag(){
 MCUCR = (1<<JTD);
 MCUCR = (1<<JTD);
-
 }
 
 void pinMode(uint8_t IO,uint8_t value){
