@@ -8,17 +8,14 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-#define RAW_ENABLE
 #define STR_MANUFACTURER	L"zian1"
 #define STR_PRODUCT		L"zian_keyboard"
 #define VENDOR_ID		0xCCCC//0x16C0
 #define PRODUCT_ID		0x3413//0x047C
 #define SUPPORT_ENDPOINT_HALT
 #define ENDPOINT0_SIZE		32
-
 #define KEYBOARD_INTERFACE	0
 #define KEYBOARD_ENDPOINT	1
-
 #define KEYBOARD_SIZE		8
 #define KEYBOARD_BUFFER		EP_DOUBLE_BUFFER
 #define RAW_EPSIZE  8
@@ -34,7 +31,7 @@ void releaseModifierKeys(uint8_t key);
 
 void ClearKeyboard();
 void ClearMouse();
-void ClearRaw();	
+void ClearRaw();
 uint8_t usb_keyboard_send_required(void);		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send();
@@ -102,8 +99,8 @@ buffer_mouse_t mouse_buffer;
 report_raw_t raw_report_in;
 report_raw_t raw_report_out;
 #endif
- report_keyboard_t keyboard_report;
- buffer_keyboard_t keyboard_buffer;
+report_keyboard_t keyboard_report;
+buffer_keyboard_t keyboard_buffer;
 
 // This file does not include the HID debug functions, so these empty
 // macros replace them with nothing, so users can compile code that
@@ -161,11 +158,11 @@ report_raw_t raw_report_out;
 #define KEY_8		37
 #define KEY_9		38
 #define KEY_0		39
-#define KEY_ENTER	40	
+#define KEY_ENTER	40
 #define KEY_ESC		41
-#define KEY_BACKSPACE	42	
+#define KEY_BACKSPACE	42
 #define KEY_TAB		43
-#define KEY_SPACE	44	
+#define KEY_SPACE	44
 #define KEY_MINUS	45
 #define KEY_EQUAL	46
 #define KEY_LEFT_BRACE	47
@@ -191,15 +188,15 @@ report_raw_t raw_report_out;
 #define KEY_F10		67
 #define KEY_F11		68
 #define KEY_F12		69
-#define KEY_PRINTSCREEN	70		
-#define KEY_SCROLL_LOCK	71		
+#define KEY_PRINTSCREEN	70
+#define KEY_SCROLL_LOCK	71
 #define KEY_PAUSE	72
-#define KEY_INSERT	73	
+#define KEY_INSERT	73
 #define KEY_HOME	74
 #define KEY_PAGE_UP	75
 #define KEY_DELETE	76
 #define KEY_END		77
-#define KEY_PAGE_DOWN	78	
+#define KEY_PAGE_DOWN	78
 #define KEY_RIGHT	79
 #define KEY_LEFT	80
 #define KEY_DOWN	81
@@ -207,19 +204,19 @@ report_raw_t raw_report_out;
 #define KEY_NUM_LOCK	83
 #define KEYPAD_SLASH	84	// /
 #define KEYPAD_ASTERIX	85	// *
-#define KEYPAD_MINUS	86	
-#define KEYPAD_PLUS	87	
-#define KEYPAD_ENTER	88	
+#define KEYPAD_MINUS	86
+#define KEYPAD_PLUS	87
+#define KEYPAD_ENTER	88
 #define KEYPAD_1	89
 #define KEYPAD_2	90
-#define KEYPAD_3	91	
-#define KEYPAD_4	92	
-#define KEYPAD_5	93	
-#define KEYPAD_6	94	
-#define KEYPAD_7	95	
-#define KEYPAD_8	96	
-#define KEYPAD_9	97	
-#define KEYPAD_0	98		
+#define KEYPAD_3	91
+#define KEYPAD_4	92
+#define KEYPAD_5	93
+#define KEYPAD_6	94
+#define KEYPAD_7	95
+#define KEYPAD_8	96
+#define KEYPAD_9	97
+#define KEYPAD_0	98
 #define KEYPAD_PERIOD	99		//.
 
 #define MOUSE_LEFT	1<<0
@@ -250,9 +247,9 @@ report_raw_t raw_report_out;
 #define EP_DOUBLE_BUFFER		0x06
 
 #define EP_SIZE(s)	((s) == 64 ? 0x30 :	\
-			((s) == 32 ? 0x20 :	\
-			((s) == 16 ? 0x10 :	\
-			             0x00)))
+((s) == 32 ? 0x20 :	\
+((s) == 16 ? 0x10 :	\
+0x00)))
 
 #define MAX_ENDPOINT		4
 
@@ -260,7 +257,7 @@ report_raw_t raw_report_out;
 #define MSB(n) ((n >> 8) & 255)
 
 #if defined(__AVR_AT90USB162__)
-#define HW_CONFIG() 
+#define HW_CONFIG()
 #define PLL_CONFIG() (PLLCSR = ((1<<PLLE)|(1<<PLLP0)))
 #define USB_CONFIG() (USBCON = (1<<USBE))
 #define USB_FREEZE() (USBCON = ((1<<USBE)|(1<<FRZCLK)))

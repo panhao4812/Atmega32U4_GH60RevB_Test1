@@ -1,4 +1,3 @@
-
 #include "usb_keyboard.h"
 
 /**************************************************************************
@@ -8,7 +7,7 @@
  **************************************************************************/
 // zero when we are not configured, non-zero when enumerated
 static volatile uint8_t usb_configuration=0;
- 
+
 
 uint8_t releasekey(uint8_t key)
 {
@@ -56,10 +55,10 @@ void releaseModifierKeys(uint8_t key)
 	keyboard_buffer.keyboard_modifier_keys&=~key;
 }
 
-static const uint8_t PROGMEM endpoint_config_table[] = {
-	0,
-	0,
+static const uint8_t PROGMEM endpoint_config_table[] = {		
 	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
+	0,
+	0,
 	0
 };
 const uint8_t PROGMEM device_descriptor[] = {
@@ -69,7 +68,7 @@ const uint8_t PROGMEM device_descriptor[] = {
 	0,					// bDeviceClass
 	0,					// bDeviceSubClass
 	0,					// bDeviceProtocol
-	64,				// bMaxPacketSize0
+	ENDPOINT0_SIZE,				// bMaxPacketSize0
 	LSB(VENDOR_ID), MSB(VENDOR_ID),		// idVendor
 	LSB(PRODUCT_ID), MSB(PRODUCT_ID),	// idProduct
 	0x00, 0x01,				// bcdDevice
@@ -112,117 +111,17 @@ const uint8_t PROGMEM KeyboardReport[] = {
         0x81, 0x00,          //   Input (Data, Array),
         0xc0                 // End Collection
 };
-#ifdef RAW_ENABLE
-const PROGMEM uint8_t  RawReport[] =
-{
-	0x06, 0x31 ,0xFF,//Usage Page (Vendor-Defined 50 31FF)
-	0x09 ,0x74,//Usage (Vendor-Defined 116)
-	0xA1, 0x01,//Collection (Application)
-	0x09 ,0x75,//Usage (Vendor-Defined 117)
-	0x15 ,0x00,//Logical Minimum (0)
-	0x26, 0xFF ,0x00,//Logical Maximum (255 FF00)
-	0x95 ,RAW_EPSIZE ,//Report Count (8)
-	0x75 ,0x08 ,//Report Size (8)
-	0x81 ,0x02 ,//Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit)
-	0x09 ,0x76 ,//Usage (Vendor-Defined 118)
-	0x15, 0x00 ,//Logical Minimum (0)
-	0x26 ,0xFF ,0x00 ,//Logical Maximum (255)
-	0x95 ,RAW_EPSIZE , //Report Count (8)
-	0x75 ,0x08 ,//Report Size (8)
-	0x91 ,0x02, //Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit)
-	0xC0 //End Collection
-};
-#endif
-#ifdef MOUSE_ENABLE
-const  PROGMEM  uint8_t MouseReport[] =
-{
-	/* mouse */
-	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-	0x09, 0x02,                    // USAGE (Mouse)
-	0xa1, 0x01,                    // COLLECTION (Application)
-	0x85, REPORT_ID_MOUSE,         //   REPORT_ID (1)
-	0x09, 0x01,                    //   USAGE (Pointer)
-	0xa1, 0x00,                    //   COLLECTION (Physical)
-	// ----------------------------  Buttons
-	0x05, 0x09,                    //     USAGE_PAGE (Button)
-	0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
-	0x29, 0x05,                    //     USAGE_MAXIMUM (Button 5)
-	0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
-	0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
-	0x75, 0x01,                    //     REPORT_SIZE (1)
-	0x95, 0x05,                    //     REPORT_COUNT (5)
-	0x81, 0x02,                    //     INPUT (Data,Var,Abs)
-	0x75, 0x03,                    //     REPORT_SIZE (3)
-	0x95, 0x01,                    //     REPORT_COUNT (1)
-	0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
-	// ----------------------------  X,Y position
-	0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
-	0x09, 0x30,                    //     USAGE (X)
-	0x09, 0x31,                    //     USAGE (Y)
-	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
-	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
-	0x75, 0x08,                    //     REPORT_SIZE (8)
-	0x95, 0x02,                    //     REPORT_COUNT (2)
-	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
-	// ----------------------------  Vertical wheel
-	0x09, 0x38,                    //     USAGE (Wheel)
-	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
-	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
-	0x35, 0x00,                    //     PHYSICAL_MINIMUM (0)        - reset physical
-	0x45, 0x00,                    //     PHYSICAL_MAXIMUM (0)
-	0x75, 0x08,                    //     REPORT_SIZE (8)
-	0x95, 0x01,                    //     REPORT_COUNT (1)
-	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
-	// ----------------------------  Horizontal wheel
-	0x05, 0x0c,                    //     USAGE_PAGE (Consumer Devices)
-	0x0a, 0x38, 0x02,              //     USAGE (AC Pan)
-	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
-	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
-	0x75, 0x08,                    //     REPORT_SIZE (8)
-	0x95, 0x01,                    //     REPORT_COUNT (1)
-	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
-	0xc0,                          //   END_COLLECTION
-	0xc0,                          // END_COLLECTION
-	/* system control */
-	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-	0x09, 0x80,                    // USAGE (System Control)
-	0xa1, 0x01,                    // COLLECTION (Application)
-	0x85, REPORT_ID_SYSTEM,        //   REPORT_ID (2)
-	0x15, 0x01,                    //   LOGICAL_MINIMUM (0x1)
-	0x26, 0xb7, 0x00,              //   LOGICAL_MAXIMUM (0xb7)
-	0x19, 0x01,                    //   USAGE_MINIMUM (0x1)
-	0x29, 0xb7,                    //   USAGE_MAXIMUM (0xb7)
-	0x75, 0x10,                    //   REPORT_SIZE (16)
-	0x95, 0x01,                    //   REPORT_COUNT (1)
-	0x81, 0x00,                    //   INPUT (Data,Array,Abs)
-	0xc0,                          // END_COLLECTION
-	/* consumer */
-	0x05, 0x0c,                    // USAGE_PAGE (Consumer Devices)
-	0x09, 0x01,                    // USAGE (Consumer Control)
-	0xa1, 0x01,                    // COLLECTION (Application)
-	0x85, REPORT_ID_CONSUMER,      //   REPORT_ID (3)
-	0x15, 0x01,                    //   LOGICAL_MINIMUM (0x1)
-	0x26, 0x9c, 0x02,              //   LOGICAL_MAXIMUM (0x29c)
-	0x19, 0x01,                    //   USAGE_MINIMUM (0x1)
-	0x2a, 0x9c, 0x02,              //   USAGE_MAXIMUM (0x29c)
-	0x75, 0x10,                    //   REPORT_SIZE (16)
-	0x95, 0x01,                    //   REPORT_COUNT (1)
-	0x81, 0x00,                    //   INPUT (Data,Array,Abs)
-	0xc0                        // END_COLLECTION
-};
-#endif
-
-#define CONFIG1_DESC_SIZE        (9+9+9+7 )
+#define CONFIG1_DESC_SIZE        (9+9+9+7)
 #define KEYBOARD_HID_DESC_OFFSET (9+9)
-const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
+const uint8_t PROGMEM config1_descriptor[] = {
 	9,
 	0x02,
-	0x42,0x00, //9+(9+9+7)+(9+9+7+7)
-	0x02,          /* number of interfaces in this configuration */
+	CONFIG1_DESC_SIZE,0x00, //9+(9+9+7)+(9+9+7+7)
+	0x01,          /* number of interfaces in this configuration */
 	1,          /* index of this configuration */
 	0,          /* configuration name string index */
 	0xA0,
-	100/2, /* max USB current in 2mA units */
+	0x32, /* max USB current in 2mA units */
 	//Interface Descriptor 0/0 HID, 1 Endpoint
 	9,          /* sizeof(usbDescrInterface): length of descriptor in bytes */
 	0x04, /* descriptor type */
@@ -247,39 +146,7 @@ const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
 	0x81, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	0x08,0x00,       /* maximum packet size */
-	1, /* in ms */
-	//Interface Descriptor 1/0 HID, 2 Endpoints
-	0x09,
-	0x04,
-	0x01,
-	0x00,
-	0x02,
-	0x03,
-	0x00,
-	0x00,
-	0x00,
-	//HID descriptor
-	0x09,
-	0x21,
-	0x01,0x11,
-	0x00,
-	0x01,
-	0x22,
-	sizeof(RawReport),0x00,
-	//endpoint descriptor for endpoint 1
-	0x07,          /* sizeof(usbDescrEndpoint) */
-	0x05,  /* descriptor type = endpoint */
-	0x82, /* IN endpoint number 1 */
-	0x03,       /* attrib: Interrupt endpoint */
-	0x08,0x00,       /* maximum packet size */
-	0x01, /* in ms */
-	//endpoint descriptor for endpoint 1
-	0x07,          /* sizeof(usbDescrEndpoint) */
-	0x05,  /* descriptor type = endpoint */
-	0x03, /* IN endpoint number 1 */
-	0x03,       /* attrib: Interrupt endpoint */
-	0x08,0x00,       /* maximum packet size */
-	0x01, /* in ms */
+	1 /* in ms */
 };
 struct usb_string_descriptor_struct {
 	uint8_t bLength;
@@ -565,7 +432,7 @@ ISR(USB_COM_vect)
 			usb_configuration = wValue;
 			usb_send_in();
 			cfg = endpoint_config_table;
-			for (i=1; i<5; i++) {
+			for (i=1; i<=MAX_ENDPOINT; i++) {
 				UENUM = i;
 				en = pgm_read_byte(cfg++);
 				UECONX = en;
@@ -666,5 +533,3 @@ ISR(USB_COM_vect)
 	}
 	UECONX = (1<<STALLRQ) | (1<<EPEN);	// stall
 }
-
-
