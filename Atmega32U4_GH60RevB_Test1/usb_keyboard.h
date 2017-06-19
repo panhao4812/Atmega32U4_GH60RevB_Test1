@@ -303,6 +303,11 @@ static inline uint8_t FrameNumber()
 	return UDFNUML;
 }
 ////////////////////////////////////////
+#define USB_INT_WAKEUPI  2
+#define USB_INT_SUSPI    3
+#define USB_INT_EORSTI   4
+#define USB_INT_SOFI     5
+#define USB_INT_RXSTPI   6
 #define USB_SERIAL_PRIVATE_INCLUDE
 #ifdef USB_SERIAL_PRIVATE_INCLUDE
 #include <avr/io.h>

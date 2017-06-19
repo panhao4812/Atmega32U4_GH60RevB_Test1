@@ -359,7 +359,7 @@ uint8_t usb_raw_recv(uint8_t *buffer, uint8_t timeout)
 	for(int i=0;i<RAW_EPSIZE;i++){*buffer++ = UEDATX;}
 	ReleaseTX();
 	SREG = intr_state;
-	return RAW_EPSIZE;
+	return 0;
 }
 uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout)
 {
@@ -390,10 +390,76 @@ uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout)
 **************************************************************************/
 // USB Device Interrupt - handle all device-level events
 // the transmit buffer flushing is triggered by the start of frame
-//
+//	General interrupt
+/*
+uint8_t USB_INT_HasOccurred(const uint8_t Interrupt){
+	switch (Interrupt)
+	{
+		case USB_INT_WAKEUPI:
+		return (UDINT  & (1 << WAKEUPI));
+		case USB_INT_SUSPI:
+		return (UDINT  & (1 << SUSPI));
+		case USB_INT_EORSTI:
+		return (UDINT  & (1 << EORSTI));
+		case USB_INT_SOFI:
+		return (UDINT  & (1 << SOFI));
+		case USB_INT_RXSTPI:
+		return (UEINTX & (1 << RXSTPI));
+		default:
+		return 0;
+	}
+}
+uint8_t USB_INT_IsEnabled(const uint8_t Interrupt)
+{
+	switch (Interrupt)
+	{
+		case USB_INT_WAKEUPI:
+		return (UDIEN  & (1 << WAKEUPE));
+		case USB_INT_SUSPI:
+		return (UDIEN  & (1 << SUSPE));
+		case USB_INT_EORSTI:
+		return (UDIEN  & (1 << EORSTE));
+		case USB_INT_SOFI:
+		return (UDIEN  & (1 << SOFE));
+		case USB_INT_RXSTPI:
+		return (UEIENX & (1 << RXSTPE));
+		default:
+		return 0;
+	}
+}
+void USB_INT_Clear(const uint8_t Interrupt){
+	switch (Interrupt)
+	{
+		case USB_INT_WAKEUPI:
+		UDINT  &= ~(1 << WAKEUPI);
+		break;
+		case USB_INT_SUSPI:
+		UDINT  &= ~(1 << SUSPI);
+		break;
+		case USB_INT_EORSTI:
+		UDINT  &= ~(1 << EORSTI);
+		break;
+		case USB_INT_SOFI:
+		UDINT  &= ~(1 << SOFI);
+		break;
+		case USB_INT_RXSTPI:
+		UEINTX &= ~(1 << RXSTPI);
+		break;
+		default:
+		return false;
+	}
+}
+*/
+void EVENT_USB_Device_StartOfFrame(void)
+{
+	static uint8_t count;
+	if (++count % 100) return;
+	count = 0;
+	if (ReadWriteAllowed())usb_raw_recv((uint8_t *)&raw_report_out, 1);
+}
 ISR(USB_GEN_vect)
 {
-	uint8_t intbits, i;
+	uint8_t intbits;
 	static uint8_t div4=0;
 
 	intbits = UDINT;
@@ -406,28 +472,35 @@ ISR(USB_GEN_vect)
 		UEIENX = (1<<RXSTPE);
 		usb_configuration = 0;
 	}
+	//////////////////////////////////////////
 	if ((intbits & (1<<SOFI)) && usb_configuration) {
-		//////////////////////////////////////////
+	     EVENT_USB_Device_StartOfFrame();
+
 		if (keyboard_buffer.keyboard_idle_config && (++div4 & 3) == 0) {
 			SetEP(KEYBOARD_ENDPOINT);
 			if (ReadWriteAllowed()) {
 				keyboard_buffer.keyboard_idle_count++;
 				if (keyboard_buffer.keyboard_idle_count == keyboard_buffer.keyboard_idle_config) {
 					keyboard_buffer.keyboard_idle_count = 0;
-					UEDATX=keyboard_report.modifier;UEDATX=keyboard_report.reserved;
-					for (i=0; i<6; i++) {
+					/*
+					UEDATX=keyboard_report.modifier;
+					UEDATX=keyboard_report.reserved;
+					for (int i=0; i<6; i++) {
 						UEDATX = keyboard_report.keycode[i];
 					}
+					*/
 					ReleaseTX();
 				}
 			}
 		}
+		/////////////////////////////////
+
 	}
 }
 // USB Endpoint Interrupt - endpoint 0 is handled here.  The
 // other endpoints are manipulated by the user-callable
 // functions, and the start-of-frame interrupt.
-//
+//	Endpoint 0 interrupt
 ISR(USB_COM_vect)
 {
 	uint8_t intbits;
