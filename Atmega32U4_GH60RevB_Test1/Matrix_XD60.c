@@ -117,6 +117,10 @@ void pokerMode(){
 		if(delay_after>0)delay_after-=1;
 		if(delay_before>0)delay_before-=1;
 		LED();
+		//r = usb_raw_recv((uint8_t *)&raw_report_out, 0);
+		//if (r == 0) {
+		//digitalWrite(ledPins[0],LOW);
+		//}
 		///////////////////////////////////
 	}
 }

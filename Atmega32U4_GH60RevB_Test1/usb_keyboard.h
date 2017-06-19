@@ -38,8 +38,8 @@ void ClearRaw();
 uint8_t usb_keyboard_send_required(void);		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send();
-uint8_t usb_raw_send();
-
+uint8_t usb_raw_recv(uint8_t *buffer, uint8_t timeout);
+uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout);
 typedef struct {
 	uint8_t report_id;
 	uint8_t buttons;
@@ -227,6 +227,82 @@ buffer_keyboard_t keyboard_buffer;
 #define REPORT_ID_SYSTEM    2
 #define REPORT_ID_CONSUMER  3
 // Everything below this point is only intended for usb_serial.c
+// Misc functions to wait for ready and send/receive packets
+static inline void WaitIN(void)
+{
+	while (!(UEINTX & (1<<TXINI)));
+}
+static inline void ClearIN(void)
+{
+	UEINTX = ~(1<<TXINI);
+}
+static inline void WaitOUT(void)
+{
+	while (!(UEINTX & (1<<RXOUTI)));
+}
+static inline uint8_t WaitForINOrOUT()
+{
+	while (!(UEINTX & ((1<<TXINI)|(1<<RXOUTI))));
+	return (UEINTX & (1<<RXOUTI)) == 0;
+}
+static inline void ClearOUT(void)
+{
+	UEINTX = ~(1<<RXOUTI);
+}
+
+static inline uint8_t Recv8()
+{
+	return UEDATX;
+}
+static inline void Send8(uint8_t d)
+{
+	UEDATX = d;
+}
+static inline void SetEP(uint8_t ep)
+{
+	UENUM = ep;
+}
+static inline uint8_t FifoByteCount()
+{
+	return UEBCLX;
+}
+static inline uint8_t ReceivedSetupInt()
+{
+	return UEINTX & (1<<RXSTPI);
+}
+static inline void ClearSetupInt()
+{
+	UEINTX = ~((1<<RXSTPI) | (1<<RXOUTI) | (1<<TXINI));
+}
+static inline void Stall()
+{
+	UECONX = (1<<STALLRQ) | (1<<EPEN);
+}
+static inline uint8_t ReadWriteAllowed()
+{
+	return UEINTX & (1<<RWAL);
+}
+static inline uint8_t Stalled()
+{
+	return UEINTX & (1<<STALLEDI);
+}
+static inline uint8_t FifoFree()
+{
+	return UEINTX & (1<<FIFOCON);
+}
+static inline void ReleaseRX()
+{
+	UEINTX = 0x6B;	// FIFOCON=0 NAKINI=1 RWAL=1 NAKOUTI=0 RXSTPI=1 RXOUTI=0 STALLEDI=1 TXINI=1
+}
+static inline void ReleaseTX()
+{
+	UEINTX = 0x3A;	// FIFOCON=0 NAKINI=0 RWAL=1 NAKOUTI=1 RXSTPI=1 RXOUTI=0 STALLEDI=1 TXINI=0
+}
+static inline uint8_t FrameNumber()
+{
+	return UDFNUML;
+}
+////////////////////////////////////////
 #define USB_SERIAL_PRIVATE_INCLUDE
 #ifdef USB_SERIAL_PRIVATE_INCLUDE
 #include <avr/io.h>
