@@ -8,7 +8,6 @@
 // zero when we are not configured, non-zero when enumerated
 static volatile uint8_t usb_configuration=0;
 
-
 uint8_t releasekey(uint8_t key)
 {
 	uint8_t i;
@@ -57,8 +56,8 @@ void releaseModifierKeys(uint8_t key)
 
 static const uint8_t PROGMEM endpoint_config_table[] = {		
 	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
-	0,
-	0,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
+	1, EP_TYPE_INTERRUPT_OUT,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
 	0
 };
 const uint8_t PROGMEM device_descriptor[] = {
@@ -111,13 +110,33 @@ const uint8_t PROGMEM KeyboardReport[] = {
         0x81, 0x00,          //   Input (Data, Array),
         0xc0                 // End Collection
 };
-#define CONFIG1_DESC_SIZE        (9+9+9+7)
+const PROGMEM uint8_t  RawReport[] =
+{
+	0x06, 0x31 ,0xFF,//Usage Page (Vendor-Defined 50 31FF)
+	0x09 ,0x74,//Usage (Vendor-Defined 116)
+	0xA1, 0x01,//Collection (Application)
+	0x09 ,0x75,//Usage (Vendor-Defined 117)
+	0x15 ,0x00,//Logical Minimum (0)
+	0x26, 0xFF ,0x00,//Logical Maximum (255 FF00)
+	0x95 ,0x08 ,//Report Count (8)
+	0x75 ,0x08 ,//Report Size (8)
+	0x81 ,0x02 ,//Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit)
+	0x09 ,0x76 ,//Usage (Vendor-Defined 118)
+	0x15, 0x00 ,//Logical Minimum (0)
+	0x26 ,0xFF ,0x00 ,//Logical Maximum (255)
+	0x95 ,0x08 , //Report Count (8)
+	0x75 ,0x08 ,//Report Size (8)
+	0x91 ,0x02, //Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit)
+	0xC0 //End Collection
+};
+#define CONFIG1_DESC_SIZE        (9+9+9+7+9+9+7+7)
 #define KEYBOARD_HID_DESC_OFFSET (9+9)
+#define RAW_HID_DESC_OFFSET (9+9+9+7+9)
 const uint8_t PROGMEM config1_descriptor[] = {
 	9,
 	0x02,
 	CONFIG1_DESC_SIZE,0x00, //9+(9+9+7)+(9+9+7+7)
-	0x01,          /* number of interfaces in this configuration */
+	0x02,          /* number of interfaces in this configuration */
 	1,          /* index of this configuration */
 	0,          /* configuration name string index */
 	0xA0,
@@ -146,7 +165,39 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	0x81, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	0x08,0x00,       /* maximum packet size */
-	1 /* in ms */
+	0x01, /* in ms */
+	//Interface Descriptor 1/0 HID, 2 Endpoints
+	0x09,
+	0x04,
+	0x01,
+	0x00,
+	0x02,
+	0x03,
+	0x00,
+	0x00,
+	0x00,
+	//HID descriptor
+	0x09,
+	0x21,
+	0x01,0x11,
+	0x00,
+	0x01,
+	0x22,
+	sizeof(RawReport),0x00,
+	//endpoint descriptor for endpoint 1
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x82, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	0x08,0x00,       /* maximum packet size */
+	0x01, /* in ms */
+	//endpoint descriptor for endpoint 1
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x03, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	0x08,0x00,       /* maximum packet size */
+	0x01 /* in ms */
 };
 struct usb_string_descriptor_struct {
 	uint8_t bLength;
@@ -168,7 +219,6 @@ const struct usb_string_descriptor_struct PROGMEM string2 = {
 	3,
 	STR_PRODUCT
 };
-
 const struct descriptor_list_struct {
 	uint16_t	wValue;
 	uint16_t	wIndex;
@@ -179,12 +229,13 @@ const struct descriptor_list_struct {
 	{0x0200, 0x0000, config1_descriptor, sizeof(config1_descriptor)},
 	{0x2200, KEYBOARD_INTERFACE, KeyboardReport, sizeof(KeyboardReport)},
 	{0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
+	{0x2200, RAW_INTERFACE, RawReport, sizeof(RawReport)},
+	{0x2100, RAW_INTERFACE, config1_descriptor+RAW_HID_DESC_OFFSET, 9},
 	{0x0300, 0x0000, (const uint8_t *)&string0, 4},
 	{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},
 	{0x0302, 0x0409, (const uint8_t *)&string2, sizeof(STR_PRODUCT)}
 };
 #define NUM_DESC_LIST (sizeof(descriptor_list)/sizeof(struct descriptor_list_struct))
-
 
 /**************************************************************************
  *
@@ -192,22 +243,19 @@ const struct descriptor_list_struct {
  *
  **************************************************************************/
 
-
 // initialize USB
 void ClearMouse(){
-	#ifdef MOUSE_ENABLE
 	memset(&mouse_report, 0, sizeof(mouse_report));
 	memset(&mouse_buffer,0,sizeof(mouse_buffer));
 	mouse_report.mouse.report_id= REPORT_ID_MOUSE;
 	mouse_report.system_keys.report_id= REPORT_ID_SYSTEM;
 	mouse_report.consumer_keys.report_id= REPORT_ID_CONSUMER;
-	#endif
 }
 void ClearKeyboard(){
 	memset( &keyboard_report, 0,sizeof(keyboard_report));
 	memset( &keyboard_buffer, 0,sizeof(keyboard_buffer));
 	keyboard_buffer.enable_pressing=1;
-	// protocol setting from the host.  We use exactly the same report
+	// protocol setting from the host.  We use exactly the same reportMOUSE_ENABLE
 	// either way, so this variable only stores the setting since we
 	// are required to be able to report which setting is in use.
 	keyboard_buffer.keyboard_protocol=1;
@@ -218,10 +266,8 @@ void ClearKeyboard(){
 	keyboard_buffer.keyboard_idle_count=0;
 }
 void ClearRaw(){
-	#ifdef RAW_ENABLE
 	memset( &raw_report_in, 0,sizeof(raw_report_in));
 	memset(&raw_report_out, 0,sizeof(raw_report_out));
-	#endif
 }
 void usb_init(void)
 {
@@ -234,6 +280,9 @@ void usb_init(void)
 	usb_configuration = 0;
         UDIEN = (1<<EORSTE)|(1<<SOFE);
 	sei();
+	ClearKeyboard();
+	ClearMouse();
+	ClearRaw();
 }
 // return 0 if the USB is not configured, or the configuration
 // number selected by the HOST

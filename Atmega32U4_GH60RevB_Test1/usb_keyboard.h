@@ -11,7 +11,7 @@
 #define STR_MANUFACTURER	L"zian1"
 #define STR_PRODUCT		L"zian_keyboard"
 #define VENDOR_ID		0xCCCC//0x16C0
-#define PRODUCT_ID		0x3413//0x047C
+#define PRODUCT_ID		0x3414//0x047C
 #define SUPPORT_ENDPOINT_HALT
 #define ENDPOINT0_SIZE		32
 #define KEYBOARD_INTERFACE	0
@@ -19,6 +19,9 @@
 #define KEYBOARD_SIZE		8
 #define KEYBOARD_BUFFER		EP_DOUBLE_BUFFER
 #define RAW_EPSIZE  8
+#define RAW_INTERFACE	1
+#define RAW_ENDPOINT_IN	2
+#define RAW_ENDPOINT_OUT	3
 
 void usb_init(void);			// initialize everything
 uint8_t usb_configured(void);		// is the USB port configured
@@ -87,18 +90,13 @@ typedef struct {
 	// either way, so this variable only stores the setting since we
 	// are required to be able to report which setting is in use
 	uint8_t keyboard_protocol;
-
 }__attribute__ ((packed))  buffer_keyboard_t;
 
-#ifdef MOUSE_ENABLE
 report_mouse_t mouse_report;
 buffer_mouse_t mouse_buffer;
-#endif
-#ifdef RAW_ENABLE
-#define maxEEP (uint16_t)511
+#define maxEEP (uint16_t)0x03FF // (1k eeprom)
 report_raw_t raw_report_in;
 report_raw_t raw_report_out;
-#endif
 report_keyboard_t keyboard_report;
 buffer_keyboard_t keyboard_buffer;
 
