@@ -484,13 +484,13 @@ ISR(USB_GEN_vect)
 				keyboard_buffer.keyboard_idle_count++;
 				if (keyboard_buffer.keyboard_idle_count == keyboard_buffer.keyboard_idle_config) {
 					keyboard_buffer.keyboard_idle_count = 0;
-					/*
+					///*
 					UEDATX=keyboard_report.modifier;
 					UEDATX=keyboard_report.reserved;
 					for (int i=0; i<6; i++) {
 						UEDATX = keyboard_report.keycode[i];
 					}
-					*/
+					//*/
 					ReleaseTX();
 				}
 			}

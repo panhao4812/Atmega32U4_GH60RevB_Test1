@@ -154,6 +154,9 @@ void eepwrite(){
 			keyboard_buffer.enable_pressing=0;
 		}
 		else if(address==0xF2FF && keyboard_buffer.enable_pressing==0 ){
+			for ( i=0; i<ledcount; i++){
+				digitalWrite(ledPins[i],HIGH);
+			}
 			keyboard_buffer.enable_pressing=2;
 		}
 		else{
