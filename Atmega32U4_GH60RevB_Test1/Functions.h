@@ -38,8 +38,8 @@ extern  uint8_t hexaKeys2[ROWS][COLS];
 extern  uint8_t keymask[ROWS][COLS];
 extern  uint8_t rowPins[ROWS];
 extern  uint8_t colPins[COLS];
-extern uint8_t delay_after;
-extern uint8_t delay_before;
+#define _delay_after 0x09
+#define _delay_before 0x03
 int init_main(void);
 void init_cols();
 void init_rows();

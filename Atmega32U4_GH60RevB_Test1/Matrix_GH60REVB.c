@@ -52,7 +52,6 @@ uint8_t r,c,i;
 uint8_t FN=0;
 uint8_t delay_after=0;
 uint8_t delay_before=0;
-uint8_t delayval;
 void pokerMode(){
 	while (1) {
 		FN=0;

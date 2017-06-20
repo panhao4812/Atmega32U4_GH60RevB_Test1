@@ -453,9 +453,11 @@ void USB_INT_Clear(const uint8_t Interrupt){
 void EVENT_USB_Device_StartOfFrame(void)
 {
 	static uint8_t count;
-	if (++count % 100) return;
+	if (++count % 60) return;
 	count = 0;
-	if (ReadWriteAllowed())usb_raw_recv((uint8_t *)&raw_report_out, 1);
+	if (ReadWriteAllowed()&& EnableRecv){
+		EnableRecv=usb_raw_recv((uint8_t *)&raw_report_out, 5);
+	}
 }
 ISR(USB_GEN_vect)
 {

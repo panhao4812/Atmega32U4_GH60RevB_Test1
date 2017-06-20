@@ -4,7 +4,7 @@
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
 //col F0, F1, E6, C7, C6, B6, D4, B1, B0, B5, B4, D7, D6, B3
-
+uint8_t r,c,i,delayval;
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
 //                        1  2  3  4  5  6  7 8 9 10 11 12 13 14
@@ -36,11 +36,47 @@ uint8_t keymask[ROWS][COLS] = {
 	{0x20,0x00,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x10,0x10},
 	{0x20,0x40,0x20,0x00,0x00,0x10,0x00,0x10,0x10,0x00,0x40,0x20,0x10,0x10}
 };
-uint8_t r,c,i;
+
+void ResetMatrix(uint8_t mask,uint16_t address){
+	uint8_t j=0;
+	for (r = 0; r < ROWS; r++) {
+		for (c = 0; c < ROWS; c++) {
+			switch (mask){
+				case 0:
+				hexaKeys[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
+				break;
+				case 1:
+				hexaKeys2[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
+				break;
+				case 2:
+				keymask[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
+				break;
+			}
+			j++;
+		}
+	}
+}
+void ResetMatrixFormEEP(){
+	//////////////////////////////////menu///////////////////////
+	//(u8)address_row,(u8)address_col,(u16)address_hexakeys,(u16)address_hexakeys2,(u16)address_keymask
+	//0,                1,               2 ,         3,         4,         5,         6,          7
+	//   8            8+5=13               8+5+14=27               8+5+14+70=97       8+5+14+140=167
+	uint8_t address_row=eeprom_read_byte((uint8_t *)0);
+	uint8_t address_col=eeprom_read_byte((uint8_t *)1);
+	uint16_t address_hexakeys=eeprom_read_word((uint16_t *)2);
+	uint16_t address_hexakeys2=eeprom_read_word((uint16_t *)4);
+	uint16_t address_keymask=eeprom_read_word((uint16_t *)6);
+	uint8_t j;
+	///////////////////////////////////
+	if(address_row==8){for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_row));}}
+	if(address_col==13){for( j=0;j<COLS;j++){colPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_col));}}
+	if(address_hexakeys==27){ResetMatrix(0,address_hexakeys);}
+	if(address_hexakeys2==97){ResetMatrix(1,address_hexakeys2);}
+	if(address_keymask==167){ResetMatrix(2,address_keymask);}
+}
 uint8_t FN=0;
 uint8_t delay_after=0;
 uint8_t delay_before=0;
-uint8_t delayval;
 void init_cols(){
 	for ( i=0; i<COLS; i++){
 		pinMode(colPins[i],INPUT);
@@ -53,9 +89,7 @@ void init_rows(){
 		digitalWrite(rowPins[i],HIGH);
 	}
 }
-//keymask ==> 0,mask_FN,mask_ModifierKeys,mask_Codekeys,0,0,pressFN,press_keys
 void init_LED(){
-	#if(defined xd60)
 	for ( i=0; i<ledcount; i++){
 		pinMode(ledPins[i],OUTPUT);
 		digitalWrite(ledPins[i],LOW);
@@ -63,10 +97,8 @@ void init_LED(){
 	WS2812Setup();delayval=Maxdelay;
 	WS2812Clear();
 	WS2812Send();
-	#endif
 }
 void LED(){
-	#if(defined xd60)
 	for ( i=0; i<ledcount; i++){
 		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
@@ -87,40 +119,69 @@ void LED(){
 		if(delayval>0 ){delayval--;}
 		else {delayval=Maxdelay;}
 	}
-	#endif
 }
 void pokerMode(){
-	while (1) {
-		FN=0;
-		for (r = 0; r < ROWS; r++) {
-			pinMode(rowPins[r],OUTPUT);
-			digitalWrite(rowPins[r],LOW);
-			for (c = 0; c < COLS; c++) {
-				if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x01;} else {keymask[r][c]|= 0x01;delay_after=0X20;}
-				if(keymask[r][c]==0x41)FN=0x02;
-			}
-			init_rows();
+	FN=0;
+	for (r = 0; r < ROWS; r++) {
+		pinMode(rowPins[r],OUTPUT);
+		digitalWrite(rowPins[r],LOW);
+		for (c = 0; c < COLS; c++) {
+			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x01;} else {keymask[r][c]|= 0x01;delay_after=_delay_after;}
+			if(keymask[r][c]==0x41)FN=0x02;
 		}
-		releaseAll();
-		for (r = 0; r < ROWS; r++) {
-			for (c = 0; c < COLS; c++) {
-				if((keymask[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
-				else if((keymask[r][c] | FN)== 0x23) pressModifierKeys(hexaKeys[r][c]);
-				else if((keymask[r][c] | FN)== 0x11) presskey(hexaKeys[r][c]);
-				else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
+		init_rows();
+	}
+	releaseAll();
+	for (r = 0; r < ROWS; r++) {
+		for (c = 0; c < COLS; c++) {
+			if((keymask[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
+			else if((keymask[r][c] | FN)== 0x23) pressModifierKeys(hexaKeys[r][c]);
+			else if((keymask[r][c] | FN)== 0x11) presskey(hexaKeys[r][c]);
+			else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
+		}
+	}
+	if(usb_keyboard_send_required())delay_before=_delay_before	;
+	if(delay_after==_delay_after && delay_before==1)usb_keyboard_send();
+	if(delay_after==1)usb_keyboard_send();
+	if(delay_after>0)delay_after-=1;
+	if(delay_before>0)delay_before-=1;
+}
+void eepwrite(){
+	//	address,word1,word2,word3
+	if (EnableRecv==0){
+		uint16_t address=raw_report_out.word[0];
+		if(address==0xF1FF && keyboard_buffer.enable_pressing==1 ){
+			keyboard_buffer.enable_pressing=0;
+		}
+		else if(address==0xF2FF && keyboard_buffer.enable_pressing==0 ){
+			keyboard_buffer.enable_pressing=2;
+		}
+		else{
+			if(keyboard_buffer.enable_pressing==0){
+				for ( i=0; i<ledcount; i++){
+					digitalWrite(ledPins[i],LOW);
+				}
+				if(address<(maxEEP-1)){
+					eeprom_busy_wait();
+					eeprom_write_word ((uint16_t *)address,raw_report_out.word[1]);
+				}
+				if((address+2)<(maxEEP-1)){
+					eeprom_busy_wait();
+					eeprom_write_word ((uint16_t *)(address+2),raw_report_out.word[2]);
+				}
+				if((address+4)<(maxEEP-1)){
+					eeprom_busy_wait();
+					eeprom_write_word ((uint16_t *)(address+4),raw_report_out.word[3]);
+				}
+				for ( i=0; i<ledcount; i++){
+					digitalWrite(ledPins[i],HIGH);
+				}
 			}
 		}
-
-		if(usb_keyboard_send_required())delay_before=4	;
-		if(delay_after==0X20 && delay_before==1)usb_keyboard_send();
-		if(delay_after==1)usb_keyboard_send();
-		if(delay_after>0)delay_after-=1;
-		if(delay_before>0)delay_before-=1;
-	    LED();		
-		///////////////////////////////////
+		memset(&raw_report_out, 0,sizeof(raw_report_out));
+		EnableRecv=1;
 	}
 }
-
 int init_main(void) {
 	CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√
 	closeJtag();
@@ -130,13 +191,27 @@ int init_main(void) {
 	//	TCCR0B =(1<<CS00);
 	//	TIMSK0 = (1<<TOIE0);
 	////////////////////////////////////////////////
+	init_LED();
 	init_cols();
 	init_rows();
-	init_LED();
-	_delay_ms(500);
-	releaseAll();
-	usb_keyboard_send();
-	pokerMode();
+	while (1) {//÷ÿ∆Ù
+		EnableRecv=1;
+		keyboard_buffer.enable_pressing=1;
+		ResetMatrixFormEEP();
+		_delay_ms(500);
+		releaseAll();
+		usb_keyboard_send();
+		while (1) {
+			eepwrite();
+			if(keyboard_buffer.enable_pressing==2){
+				break;
+			}
+			else if(keyboard_buffer.enable_pressing==1){
+				pokerMode();
+				LED();
+			}
+		}
+	}
 	return 0;
 }
 #endif

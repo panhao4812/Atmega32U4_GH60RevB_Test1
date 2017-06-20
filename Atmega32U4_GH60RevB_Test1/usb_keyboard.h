@@ -7,7 +7,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-
+#include <avr/eeprom.h>
 #define STR_MANUFACTURER	L"zian1"
 #define STR_PRODUCT		L"zian_keyboard"
 #define VENDOR_ID		0xCCCC//0x16C0
@@ -31,7 +31,7 @@ void releaseAll();
 uint8_t presskey(uint8_t key);
 void pressModifierKeys(uint8_t key);
 void releaseModifierKeys(uint8_t key);
-
+volatile uint8_t EnableRecv;//eep change
 void ClearKeyboard();
 void ClearMouse();
 void ClearRaw();
