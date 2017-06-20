@@ -393,61 +393,61 @@ uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout)
 //	General interrupt
 /*
 uint8_t USB_INT_HasOccurred(const uint8_t Interrupt){
-	switch (Interrupt)
-	{
-		case USB_INT_WAKEUPI:
-		return (UDINT  & (1 << WAKEUPI));
-		case USB_INT_SUSPI:
-		return (UDINT  & (1 << SUSPI));
-		case USB_INT_EORSTI:
-		return (UDINT  & (1 << EORSTI));
-		case USB_INT_SOFI:
-		return (UDINT  & (1 << SOFI));
-		case USB_INT_RXSTPI:
-		return (UEINTX & (1 << RXSTPI));
-		default:
-		return 0;
-	}
+switch (Interrupt)
+{
+case USB_INT_WAKEUPI:
+return (UDINT  & (1 << WAKEUPI));
+case USB_INT_SUSPI:
+return (UDINT  & (1 << SUSPI));
+case USB_INT_EORSTI:
+return (UDINT  & (1 << EORSTI));
+case USB_INT_SOFI:
+return (UDINT  & (1 << SOFI));
+case USB_INT_RXSTPI:
+return (UEINTX & (1 << RXSTPI));
+default:
+return 0;
+}
 }
 uint8_t USB_INT_IsEnabled(const uint8_t Interrupt)
 {
-	switch (Interrupt)
-	{
-		case USB_INT_WAKEUPI:
-		return (UDIEN  & (1 << WAKEUPE));
-		case USB_INT_SUSPI:
-		return (UDIEN  & (1 << SUSPE));
-		case USB_INT_EORSTI:
-		return (UDIEN  & (1 << EORSTE));
-		case USB_INT_SOFI:
-		return (UDIEN  & (1 << SOFE));
-		case USB_INT_RXSTPI:
-		return (UEIENX & (1 << RXSTPE));
-		default:
-		return 0;
-	}
+switch (Interrupt)
+{
+case USB_INT_WAKEUPI:
+return (UDIEN  & (1 << WAKEUPE));
+case USB_INT_SUSPI:
+return (UDIEN  & (1 << SUSPE));
+case USB_INT_EORSTI:
+return (UDIEN  & (1 << EORSTE));
+case USB_INT_SOFI:
+return (UDIEN  & (1 << SOFE));
+case USB_INT_RXSTPI:
+return (UEIENX & (1 << RXSTPE));
+default:
+return 0;
+}
 }
 void USB_INT_Clear(const uint8_t Interrupt){
-	switch (Interrupt)
-	{
-		case USB_INT_WAKEUPI:
-		UDINT  &= ~(1 << WAKEUPI);
-		break;
-		case USB_INT_SUSPI:
-		UDINT  &= ~(1 << SUSPI);
-		break;
-		case USB_INT_EORSTI:
-		UDINT  &= ~(1 << EORSTI);
-		break;
-		case USB_INT_SOFI:
-		UDINT  &= ~(1 << SOFI);
-		break;
-		case USB_INT_RXSTPI:
-		UEINTX &= ~(1 << RXSTPI);
-		break;
-		default:
-		return false;
-	}
+switch (Interrupt)
+{
+case USB_INT_WAKEUPI:
+UDINT  &= ~(1 << WAKEUPI);
+break;
+case USB_INT_SUSPI:
+UDINT  &= ~(1 << SUSPI);
+break;
+case USB_INT_EORSTI:
+UDINT  &= ~(1 << EORSTI);
+break;
+case USB_INT_SOFI:
+UDINT  &= ~(1 << SOFI);
+break;
+case USB_INT_RXSTPI:
+UEINTX &= ~(1 << RXSTPI);
+break;
+default:
+return false;
+}
 }
 */
 void EVENT_USB_Device_StartOfFrame(void)
@@ -476,7 +476,7 @@ ISR(USB_GEN_vect)
 	}
 	//////////////////////////////////////////
 	if ((intbits & (1<<SOFI)) && usb_configuration) {
-	     EVENT_USB_Device_StartOfFrame();
+		EVENT_USB_Device_StartOfFrame();
 
 		if (keyboard_buffer.keyboard_idle_config && (++div4 & 3) == 0) {
 			SetEP(KEYBOARD_ENDPOINT);
@@ -702,20 +702,24 @@ ISR(USB_COM_vect)
 				} while (len || n == ENDPOINT0_SIZE);
 				return;
 			}
-			if (bmRequestType == 0x21 && bRequest == HID_SET_REPORT) {
-				len = RAW_EPSIZE;
-				do {
-					n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
-					WaitOUT();
-					// ignore incoming bytes
-					ClearOUT();
-					len -= n;
-				} while (len);
-				WaitIN();
-				ClearIN();
-				return;
+			if (bmRequestType == 0x21 ){
+				if (bRequest == HID_SET_IDLE) {
+					return;
+				}
+				if (bRequest == HID_SET_REPORT) {
+					len = RAW_EPSIZE;
+					do {
+						n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
+						WaitOUT();
+						// ignore incoming bytes
+						ClearOUT();
+						len -= n;
+					} while (len);
+					WaitIN();
+					ClearIN();
+					return;
+				}
 			}
 		}
+		Stall();	// stall
 	}
-	Stall();	// stall
-}
