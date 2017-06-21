@@ -13,6 +13,7 @@
 #define VENDOR_ID		0xCCCC//0x16C0
 #define PRODUCT_ID		0x3414//0x047C
 #define SUPPORT_ENDPOINT_HALT
+
 #define ENDPOINT0_SIZE		32
 #define KEYBOARD_INTERFACE	0
 #define KEYBOARD_ENDPOINT	1
@@ -22,9 +23,12 @@
 #define RAW_INTERFACE	1
 #define RAW_ENDPOINT_IN	2
 #define RAW_ENDPOINT_OUT	3
-
-void usb_init(void);			// initialize everything
-uint8_t usb_configured(void);		// is the USB port configured
+#define MOUSE_INTERFACE 2
+#define MOUSE_ENDPOINT	4
+#define MOUSE_SIZE		8
+#define MOUSE_BUFFER		EP_DOUBLE_BUFFER
+void usb_init();			// initialize everything
+uint8_t usb_configured();		// is the USB port configured
 
 uint8_t releasekey(uint8_t key);
 void releaseAll();
@@ -35,7 +39,7 @@ volatile uint8_t EnableRecv;//eep change
 void ClearKeyboard();
 void ClearMouse();
 void ClearRaw();
-uint8_t usb_keyboard_send_required(void);		// initialize everything
+uint8_t usb_keyboard_send_required();		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
@@ -77,6 +81,10 @@ typedef struct {
 	int8_t h;
 	uint16_t system_keys;
 	uint16_t consumer_keys;
+	// protocol setting from the host.  We use exactly the same report
+	// either way, so this variable only stores the setting since we
+	// are required to be able to report which setting is in use.
+	uint8_t mouse_protocol;
 } __attribute__ ((packed)) buffer_mouse_t;
 typedef struct {
 	uint8_t keyboard_modifier_keys;

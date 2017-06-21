@@ -1,11 +1,98 @@
 #include "Functions.h"
-#include <string.h>
 
+void ClearMouse(){
+	memset(&mouse_report, 0, sizeof(mouse_report));
+	memset(&mouse_buffer,0,sizeof(mouse_buffer));
+	mouse_report.mouse.report_id= REPORT_ID_MOUSE;
+	mouse_report.system_keys.report_id= REPORT_ID_SYSTEM;
+	mouse_report.consumer_keys.report_id= REPORT_ID_CONSUMER;
+	mouse_buffer.mouse_protocol=1;
+}
+void ClearKeyboard(){
+	memset( &keyboard_report, 0,sizeof(keyboard_report));
+	memset( &keyboard_buffer, 0,sizeof(keyboard_buffer));
+	keyboard_buffer.enable_pressing=1;
+	// protocol setting from the host.  We use exactly the same reportMOUSE_ENABLE
+	// either way, so this variable only stores the setting since we
+	// are required to be able to report which setting is in use.
+	keyboard_buffer.keyboard_protocol=1;
+	// the idle configuration, how often we send the report to the
+	// host (ms * 4) even when it hasn't changed
+	keyboard_buffer.keyboard_idle_config=125;
+	// count until idle timeout
+	keyboard_buffer.keyboard_idle_count=0;
+}
+void ClearRaw(){
+	memset( &raw_report_in, 0,sizeof(raw_report_in));
+	memset(&raw_report_out, 0,sizeof(raw_report_out));
+}
 
+uint8_t releasekey(uint8_t key)
+{
+	uint8_t i;
+	uint8_t send_required=0;
+	for ( i=0; i < 6; i++) {
+		if (keyboard_buffer.keyboard_keys[i] == key) {
+			keyboard_buffer.keyboard_keys[i] = 0;
+			send_required=1;
+			break;
+		}
+	}
+	return send_required;
+}
+void releaseAll()
+{
+	uint8_t i;
+	for ( i=0; i < 6; i++) {
+		keyboard_buffer.keyboard_keys[i] = 0;
+	}
+	keyboard_buffer.keyboard_modifier_keys=0;
+}
+uint8_t presskey(uint8_t key)
+{
+	uint8_t i;
+	for ( i=0; i < 6; i++) {
+		if (keyboard_buffer.keyboard_keys[i] == key) {
+			return 1;
+		}
+	}
+	for ( i=0; i < 6; i++) {
+		if (keyboard_buffer.keyboard_keys[i] == 0) {
+			keyboard_buffer.keyboard_keys[i] = key;
+			return 1;
+		}
+	}
+	return 0;
+}
+void pressModifierKeys(uint8_t key)
+{
+	keyboard_buffer.keyboard_modifier_keys|=key;
+}
+void releaseModifierKeys(uint8_t key)
+{
+	keyboard_buffer.keyboard_modifier_keys&=~key;
+}
+uint8_t usb_keyboard_send_required(){
+	uint8_t send_required=0;
+	if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys){keyboard_report.modifier = keyboard_buffer.keyboard_modifier_keys;send_required=1;}
+	if(keyboard_report.keycode[0]!=keyboard_buffer.keyboard_keys[0]){keyboard_report.keycode[0]=keyboard_buffer.keyboard_keys[0];send_required=1;}
+	if(keyboard_report.keycode[1]!=keyboard_buffer.keyboard_keys[1]){keyboard_report.keycode[1]=keyboard_buffer.keyboard_keys[1];send_required=1;}
+	if(keyboard_report.keycode[2]!=keyboard_buffer.keyboard_keys[2]){keyboard_report.keycode[2]=keyboard_buffer.keyboard_keys[2];send_required=1;}
+	if(keyboard_report.keycode[3]!=keyboard_buffer.keyboard_keys[3]){keyboard_report.keycode[3]=keyboard_buffer.keyboard_keys[3];send_required=1;}
+	if(keyboard_report.keycode[4]!=keyboard_buffer.keyboard_keys[4]){keyboard_report.keycode[4]=keyboard_buffer.keyboard_keys[4];send_required=1;}
+	if(keyboard_report.keycode[5]!=keyboard_buffer.keyboard_keys[5]){keyboard_report.keycode[5]=keyboard_buffer.keyboard_keys[5];send_required=1;}
+	return send_required;
+}
+uint8_t usb_keyboard_send(void)
+{
+	uint8_t send_required=usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	if(send_required==0)keyboard_buffer.keyboard_idle_count = 0;
+	return send_required;
+}
 #if defined(__AVR_ATmega32U4__)
 void closeJtag(){
-MCUCR = (1<<JTD);
-MCUCR = (1<<JTD);
+	MCUCR = (1<<JTD);
+	MCUCR = (1<<JTD);
 }
 
 void pinMode(uint8_t IO,uint8_t value){

@@ -8,58 +8,6 @@
 // zero when we are not configured, non-zero when enumerated
 static volatile uint8_t usb_configuration=0;
 
-uint8_t releasekey(uint8_t key)
-{
-	uint8_t i;
-	uint8_t send_required=0;
-	for ( i=0; i < 6; i++) {
-		if (keyboard_buffer.keyboard_keys[i] == key) {
-			keyboard_buffer.keyboard_keys[i] = 0;
-			send_required=1;
-			break;
-		}
-	}
-	return send_required;
-}
-void releaseAll()
-{
-	uint8_t i;
-	for ( i=0; i < 6; i++) {
-		keyboard_buffer.keyboard_keys[i] = 0;
-	}
-	keyboard_buffer.keyboard_modifier_keys=0;
-}
-uint8_t presskey(uint8_t key)
-{
-	uint8_t i;
-	for ( i=0; i < 6; i++) {
-		if (keyboard_buffer.keyboard_keys[i] == key) {
-			return 1;
-		}
-	}
-	for ( i=0; i < 6; i++) {
-		if (keyboard_buffer.keyboard_keys[i] == 0) {
-			keyboard_buffer.keyboard_keys[i] = key;
-			return 1;
-		}
-	}
-	return 0;
-}
-void pressModifierKeys(uint8_t key)
-{
-	keyboard_buffer.keyboard_modifier_keys|=key;
-}
-void releaseModifierKeys(uint8_t key)
-{
-	keyboard_buffer.keyboard_modifier_keys&=~key;
-}
-
-static const uint8_t PROGMEM endpoint_config_table[] = {
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
-	1, EP_TYPE_INTERRUPT_OUT,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
-	0
-};
 const uint8_t PROGMEM device_descriptor[] = {
 	18,					// bLength
 	1,					// bDescriptorType
@@ -110,6 +58,82 @@ const uint8_t PROGMEM KeyboardReport[] = {
 	0x81, 0x00,          //   Input (Data, Array),
 	0xc0                 // End Collection
 };
+const  PROGMEM  uint8_t MouseReport[] =
+{
+	/* mouse */
+	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+	0x09, 0x02,                    // USAGE (Mouse)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID_MOUSE,         //   REPORT_ID (1)
+	0x09, 0x01,                    //   USAGE (Pointer)
+	0xa1, 0x00,                    //   COLLECTION (Physical)
+	// ----------------------------  Buttons
+	0x05, 0x09,                    //     USAGE_PAGE (Button)
+	0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
+	0x29, 0x05,                    //     USAGE_MAXIMUM (Button 5)
+	0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
+	0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
+	0x75, 0x01,                    //     REPORT_SIZE (1)
+	0x95, 0x05,                    //     REPORT_COUNT (5)
+	0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+	0x75, 0x03,                    //     REPORT_SIZE (3)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
+	// ----------------------------  X,Y position
+	0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
+	0x09, 0x30,                    //     USAGE (X)
+	0x09, 0x31,                    //     USAGE (Y)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x02,                    //     REPORT_COUNT (2)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	// ----------------------------  Vertical wheel
+	0x09, 0x38,                    //     USAGE (Wheel)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x35, 0x00,                    //     PHYSICAL_MINIMUM (0)        - reset physical
+	0x45, 0x00,                    //     PHYSICAL_MAXIMUM (0)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	// ----------------------------  Horizontal wheel
+	0x05, 0x0c,                    //     USAGE_PAGE (Consumer Devices)
+	0x0a, 0x38, 0x02,              //     USAGE (AC Pan)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	0xc0,                          //   END_COLLECTION
+	0xc0,                          // END_COLLECTION
+	/* system control */
+	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+	0x09, 0x80,                    // USAGE (System Control)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID_SYSTEM,        //   REPORT_ID (2)
+	0x15, 0x01,                    //   LOGICAL_MINIMUM (0x1)
+	0x26, 0xb7, 0x00,              //   LOGICAL_MAXIMUM (0xb7)
+	0x19, 0x01,                    //   USAGE_MINIMUM (0x1)
+	0x29, 0xb7,                    //   USAGE_MAXIMUM (0xb7)
+	0x75, 0x10,                    //   REPORT_SIZE (16)
+	0x95, 0x01,                    //   REPORT_COUNT (1)
+	0x81, 0x00,                    //   INPUT (Data,Array,Abs)
+	0xc0,                          // END_COLLECTION
+	/* consumer */
+	0x05, 0x0c,                    // USAGE_PAGE (Consumer Devices)
+	0x09, 0x01,                    // USAGE (Consumer Control)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID_CONSUMER,      //   REPORT_ID (3)
+	0x15, 0x01,                    //   LOGICAL_MINIMUM (0x1)
+	0x26, 0x9c, 0x02,              //   LOGICAL_MAXIMUM (0x29c)
+	0x19, 0x01,                    //   USAGE_MINIMUM (0x1)
+	0x2a, 0x9c, 0x02,              //   USAGE_MAXIMUM (0x29c)
+	0x75, 0x10,                    //   REPORT_SIZE (16)
+	0x95, 0x01,                    //   REPORT_COUNT (1)
+	0x81, 0x00,                    //   INPUT (Data,Array,Abs)
+	0xc0                        // END_COLLECTION
+};
 const PROGMEM uint8_t  RawReport[] =
 {
 	0x06, 0x31 ,0xFF,//Usage Page (Vendor-Defined 50 31FF)
@@ -129,14 +153,15 @@ const PROGMEM uint8_t  RawReport[] =
 	0x91 ,0x02, //Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit)
 	0xC0 //End Collection
 };
-#define CONFIG1_DESC_SIZE        (9+9+9+7+9+9+7+7)
-#define KEYBOARD_HID_DESC_OFFSET (9+9)
-#define RAW_HID_DESC_OFFSET (9+9+9+7+9)
+#define CONFIG1_DESC_SIZE        (9+9+9+7+9+9+7+7+9+9+7)
+#define KEYBOARD_HID_DESC_OFFSET (9+              9)
+#define RAW_HID_DESC_OFFSET      (9+9+9+7+        9)
+#define MOUSE_HID_DESC_OFFSET    (9+9+9+7+9+9+7+7+9)
 const uint8_t PROGMEM config1_descriptor[] = {
 	9,
 	0x02,
 	CONFIG1_DESC_SIZE,0x00, //9+(9+9+7)+(9+9+7+7)
-	0x02,          /* number of interfaces in this configuration */
+	0x03,          /* number of interfaces in this configuration */
 	1,          /* index of this configuration */
 	0,          /* configuration name string index */
 	0xA0,
@@ -169,7 +194,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//Interface Descriptor 1/0 HID, 2 Endpoints
 	0x09,
 	0x04,
-	0x01,
+	0x01, //interface number
 	0x00,
 	0x02,
 	0x03,
@@ -184,17 +209,42 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	0x01,
 	0x22,
 	sizeof(RawReport),0x00,
-	//endpoint descriptor for endpoint 1
+	//endpoint descriptor for endpoint 2
 	0x07,          /* sizeof(usbDescrEndpoint) */
 	0x05,  /* descriptor type = endpoint */
 	0x82, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	0x08,0x00,       /* maximum packet size */
 	0x01, /* in ms */
-	//endpoint descriptor for endpoint 1
+	//endpoint descriptor for endpoint 3
 	0x07,          /* sizeof(usbDescrEndpoint) */
 	0x05,  /* descriptor type = endpoint */
 	0x03, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	0x08,0x00,       /* maximum packet size */
+	0x01, /* in ms */
+	//Interface Descriptor 1/0 HID, 2 Endpoints
+	0x09,
+	0x04,  //interface
+	0x02,  //interface number
+	0x00,
+	0x01,
+	0x03, //hid
+	0x01, //boot interface
+	0x02, //mouse
+	0x00,
+	//HID descriptor
+	0x09,
+	0x21,
+	0x01,0x11,
+	0x00,
+	0x01,
+	0x22,
+	sizeof(MouseReport),0x00,
+	//endpoint descriptor for endpoint 4
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x82, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	0x08,0x00,       /* maximum packet size */
 	0x01 /* in ms */
@@ -231,12 +281,20 @@ const struct descriptor_list_struct {
 	{0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
 	{0x2200, RAW_INTERFACE, RawReport, sizeof(RawReport)},
 	{0x2100, RAW_INTERFACE, config1_descriptor+RAW_HID_DESC_OFFSET, 9},
+	{0x2200, MOUSE_INTERFACE, MouseReport, sizeof(MouseReport)},
+	{0x2100, MOUSE_INTERFACE, config1_descriptor+MOUSE_HID_DESC_OFFSET, 9},
 	{0x0300, 0x0409, (const uint8_t *)&string0, 4},
 	{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},
 	{0x0302, 0x0409, (const uint8_t *)&string2, sizeof(STR_PRODUCT)}
 };
 #define NUM_DESC_LIST (sizeof(descriptor_list)/sizeof(struct descriptor_list_struct))
 
+static const uint8_t PROGMEM endpoint_config_table[] = {
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
+	1, EP_TYPE_INTERRUPT_OUT, EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | MOUSE_SIZE,
+};
 /**************************************************************************
 *
 *  Public Functions - these are the API intended for the user
@@ -244,31 +302,7 @@ const struct descriptor_list_struct {
 **************************************************************************/
 
 // initialize USB
-void ClearMouse(){
-	memset(&mouse_report, 0, sizeof(mouse_report));
-	memset(&mouse_buffer,0,sizeof(mouse_buffer));
-	mouse_report.mouse.report_id= REPORT_ID_MOUSE;
-	mouse_report.system_keys.report_id= REPORT_ID_SYSTEM;
-	mouse_report.consumer_keys.report_id= REPORT_ID_CONSUMER;
-}
-void ClearKeyboard(){
-	memset( &keyboard_report, 0,sizeof(keyboard_report));
-	memset( &keyboard_buffer, 0,sizeof(keyboard_buffer));
-	keyboard_buffer.enable_pressing=1;
-	// protocol setting from the host.  We use exactly the same reportMOUSE_ENABLE
-	// either way, so this variable only stores the setting since we
-	// are required to be able to report which setting is in use.
-	keyboard_buffer.keyboard_protocol=1;
-	// the idle configuration, how often we send the report to the
-	// host (ms * 4) even when it hasn't changed
-	keyboard_buffer.keyboard_idle_config=125;
-	// count until idle timeout
-	keyboard_buffer.keyboard_idle_count=0;
-}
-void ClearRaw(){
-	memset( &raw_report_in, 0,sizeof(raw_report_in));
-	memset(&raw_report_out, 0,sizeof(raw_report_out));
-}
+
 void usb_init(void)
 {
 	HW_CONFIG();
@@ -341,23 +375,7 @@ uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint
 	SREG = intr_state;
 	return 0;
 }
-uint8_t usb_keyboard_send_required(){
-	uint8_t send_required=0;
-	if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys){keyboard_report.modifier = keyboard_buffer.keyboard_modifier_keys;send_required=1;}
-	if(keyboard_report.keycode[0]!=keyboard_buffer.keyboard_keys[0]){keyboard_report.keycode[0]=keyboard_buffer.keyboard_keys[0];send_required=1;}
-	if(keyboard_report.keycode[1]!=keyboard_buffer.keyboard_keys[1]){keyboard_report.keycode[1]=keyboard_buffer.keyboard_keys[1];send_required=1;}
-	if(keyboard_report.keycode[2]!=keyboard_buffer.keyboard_keys[2]){keyboard_report.keycode[2]=keyboard_buffer.keyboard_keys[2];send_required=1;}
-	if(keyboard_report.keycode[3]!=keyboard_buffer.keyboard_keys[3]){keyboard_report.keycode[3]=keyboard_buffer.keyboard_keys[3];send_required=1;}
-	if(keyboard_report.keycode[4]!=keyboard_buffer.keyboard_keys[4]){keyboard_report.keycode[4]=keyboard_buffer.keyboard_keys[4];send_required=1;}
-	if(keyboard_report.keycode[5]!=keyboard_buffer.keyboard_keys[5]){keyboard_report.keycode[5]=keyboard_buffer.keyboard_keys[5];send_required=1;}
-	return send_required;
-}
-uint8_t usb_keyboard_send(void)
-{
-	uint8_t send_required=usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
-	if(send_required==0)keyboard_buffer.keyboard_idle_count = 0;
-	return send_required;
-}
+
 /**************************************************************************
 *
 *  Private Functions - not intended for general user consumption....
@@ -587,24 +605,26 @@ ISR(USB_COM_vect)
 			}
 		}
 		if (wIndex == RAW_INTERFACE) {
-			if (bmRequestType == 0xA1 && bRequest == HID_GET_REPORT) {
-				len = RAW_EPSIZE;
-				do {
-					// wait for host ready for IN packet
+			if (bmRequestType == 0xA1){
+				if ( bRequest == HID_GET_REPORT) {
+					len = RAW_EPSIZE;
 					do {
-						i = UEINTX;
-					} while (!(i & ((1<<TXINI)|(1<<RXOUTI))));
-					if (i & (1<<RXOUTI)) return;	// abort
-					// send IN packet
-					n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
-					for (i = n; i; i--) {
-						// just send zeros
-						UEDATX = 0;
-					}
-					len -= n;
-					ClearIN();
-				} while (len || n == ENDPOINT0_SIZE);
-				return;
+						// wait for host ready for IN packet
+						do {
+							i = UEINTX;
+						} while (!(i & ((1<<TXINI)|(1<<RXOUTI))));
+						if (i & (1<<RXOUTI)) return;	// abort
+						// send IN packet
+						n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
+						for (i = n; i; i--) {
+							// just send zeros
+							UEDATX = 0;
+						}
+						len -= n;
+						ClearIN();
+					} while (len || n == ENDPOINT0_SIZE);
+					return;
+				}
 			}
 			if (bmRequestType == 0x21 ){
 				if (bRequest == HID_SET_IDLE) {
@@ -626,7 +646,51 @@ ISR(USB_COM_vect)
 				}
 			}
 		}
+		if (wIndex == MOUSE_INTERFACE) {
+			if (bmRequestType == 0xA1) {
+				if (bRequest == HID_GET_REPORT) {
+					WaitIN();
+					UEDATX = mouse_report.mouse.report_id;
+					UEDATX = mouse_report.mouse.buttons;
+					UEDATX = mouse_report.mouse.x;
+					UEDATX = mouse_report.mouse.y;
+					UEDATX = mouse_report.mouse.v;
+					UEDATX = mouse_report.mouse.h;
+					ClearIN();
+					return;
+				}
+				if (bRequest == HID_GET_PROTOCOL) {
+					WaitIN();
+					UEDATX = mouse_buffer.mouse_protocol;
+					ClearIN();
+					return;
+				}
+			}
+			if (bmRequestType == 0x21) {
+				if (bRequest == HID_SET_PROTOCOL) {
+					mouse_buffer.mouse_protocol = wValue;
+					ClearIN();
+					return;
+				}
+				if (bRequest == HID_SET_IDLE) {
+					ClearIN();
+					return;
+				}
+			}
+		}
 	}
 	Stall();	// stall
 }
 
+/*
+ * Appendix G: HID Request Support Requirements
+ *
+ * The following table enumerates the requests that need to be supported by various types of HID class devices.
+ * Device type     GetReport   SetReport   GetIdle     SetIdle     GetProtocol SetProtocol
+ * ------------------------------------------------------------------------------------------
+ * Boot Mouse      Required    Optional    Optional    Optional    Required    Required
+ * Non-Boot Mouse  Required    Optional    Optional    Optional    Optional    Optional
+ * Boot Keyboard   Required    Optional    Required    Required    Required    Required
+ * Non-Boot Keybrd Required    Optional    Required    Required    Optional    Optional
+ * Other Device    Required    Optional    Optional    Optional    Optional    Optional
+ */

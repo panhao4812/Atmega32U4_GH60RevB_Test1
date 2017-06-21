@@ -41,6 +41,8 @@ uint8_t hexaKeys2[ROWS][COLS] = {
 	{KEY_LEFT_SHIFT,0x00 ,KEY_NUM_LOCK,KEY_SCROLL_LOCK,KEY_INSERT,KEY_PRINTSCREEN,0x00,0x00,0x00,0x00,0x00,0x00,0x00,KEY_RIGHT_SHIFT},
 	{KEY_LEFT_CTRL,KEY_LEFT_GUI,KEY_LEFT_ALT ,0x00,0x00,KEY_SPACE,0x00,0x00,0x00,0x00,KEY_RIGHT_ALT,KEY_RIGHT_GUI,0x00, KEY_RIGHT_CTRL  }
 };
+//0,FN,modifykey,keys,mousekey,system,cusumer,Pressstate
+//FN=0x40,modifykey=0x20,keys=0x10,mousekey=0x08,system=0x04,cusumer=0x02
 uint8_t keymask[ROWS][COLS] = {
 	{0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10},
 	{0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10},
@@ -52,6 +54,7 @@ uint8_t r,c,i;
 uint8_t FN=0;
 uint8_t delay_after=0;
 uint8_t delay_before=0;
+void EVENT_USB_Device_StartOfFrame(){return;}
 void pokerMode(){
 	while (1) {
 		FN=0;
@@ -67,7 +70,7 @@ void pokerMode(){
 		releaseAll();
 		for (r = 0; r < ROWS; r++) {
 			for (c = 0; c < COLS; c++) {
-				if((keymask[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
+				if(     (keymask[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
 				else if((keymask[r][c] | FN)== 0x23) pressModifierKeys(hexaKeys[r][c]);
 				else if((keymask[r][c] | FN)== 0x11) presskey(hexaKeys[r][c]);
 				else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
