@@ -38,8 +38,9 @@ void ClearRaw();
 uint8_t usb_keyboard_send_required(void);		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send();
-uint8_t usb_raw_recv(uint8_t *buffer, uint8_t timeout);
-uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout);
+uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
+uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
+void EVENT_USB_Device_StartOfFrame();
 typedef struct {
 	uint8_t report_id;
 	uint8_t buttons;
@@ -228,6 +229,65 @@ buffer_keyboard_t keyboard_buffer;
 #define REPORT_ID_CONSUMER  3
 // Everything below this point is only intended for usb_serial.c
 // Misc functions to wait for ready and send/receive packets
+/*
+uint8_t USB_INT_HasOccurred(const uint8_t Interrupt){
+switch (Interrupt)
+{
+case USB_INT_WAKEUPI:
+return (UDINT  & (1 << WAKEUPI));
+case USB_INT_SUSPI:
+return (UDINT  & (1 << SUSPI));
+case USB_INT_EORSTI:
+return (UDINT  & (1 << EORSTI));
+case USB_INT_SOFI:
+return (UDINT  & (1 << SOFI));
+case USB_INT_RXSTPI:
+return (UEINTX & (1 << RXSTPI));
+default:
+return 0;
+}
+}
+uint8_t USB_INT_IsEnabled(const uint8_t Interrupt)
+{
+switch (Interrupt)
+{
+case USB_INT_WAKEUPI:
+return (UDIEN  & (1 << WAKEUPE));
+case USB_INT_SUSPI:
+return (UDIEN  & (1 << SUSPE));
+case USB_INT_EORSTI:
+return (UDIEN  & (1 << EORSTE));
+case USB_INT_SOFI:
+return (UDIEN  & (1 << SOFE));
+case USB_INT_RXSTPI:
+return (UEIENX & (1 << RXSTPE));
+default:
+return 0;
+}
+}
+void USB_INT_Clear(const uint8_t Interrupt){
+switch (Interrupt)
+{
+case USB_INT_WAKEUPI:
+UDINT  &= ~(1 << WAKEUPI);
+break;
+case USB_INT_SUSPI:
+UDINT  &= ~(1 << SUSPI);
+break;
+case USB_INT_EORSTI:
+UDINT  &= ~(1 << EORSTI);
+break;
+case USB_INT_SOFI:
+UDINT  &= ~(1 << SOFI);
+break;
+case USB_INT_RXSTPI:
+UEINTX &= ~(1 << RXSTPI);
+break;
+default:
+return false;
+}
+}
+*/
 static inline void WaitIN(void)
 {
 	while (!(UEINTX & (1<<TXINI)));

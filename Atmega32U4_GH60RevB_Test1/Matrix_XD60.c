@@ -120,7 +120,7 @@ void LED(){
 		else {delayval=Maxdelay;}
 	}
 }
-void pokerMode(){
+void XDMode(){
 	FN=0;
 	for (r = 0; r < ROWS; r++) {
 		pinMode(rowPins[r],OUTPUT);
@@ -145,6 +145,16 @@ void pokerMode(){
 	if(delay_after==1)usb_keyboard_send();
 	if(delay_after>0)delay_after-=1;
 	if(delay_before>0)delay_before-=1;
+}
+void EVENT_USB_Device_StartOfFrame()
+{
+	static uint8_t count;
+	if (++count % 50) return;
+	count = 0;
+	if (ReadWriteAllowed()&& EnableRecv){
+		if(keyboard_buffer.enable_pressing==0)	{EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,RAW_EPSIZE ,0);}
+		else { EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,2, 0);}
+	}
 }
 void eepwrite(){
 	//	address,word1,word2,word3
@@ -194,10 +204,10 @@ int init_main(void) {
 	//	TCCR0B =(1<<CS00);
 	//	TIMSK0 = (1<<TOIE0);
 	////////////////////////////////////////////////
-	init_LED();
 	init_cols();
 	init_rows();
 	while (1) {//ÖØÆô
+	init_LED();
 		EnableRecv=1;
 		keyboard_buffer.enable_pressing=1;
 		ResetMatrixFormEEP();
@@ -210,7 +220,7 @@ int init_main(void) {
 				break;
 			}
 			else if(keyboard_buffer.enable_pressing==1){
-				pokerMode();
+				XDMode();
 				LED();
 			}
 		}

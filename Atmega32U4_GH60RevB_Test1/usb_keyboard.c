@@ -296,34 +296,48 @@ void Recv(volatile uint8_t* data, uint8_t count)
 	*data++ = UEDATX;
 }
 // send the contents of keyboard_keys and keyboard_modifier_keys
-uint8_t usb_keyboard_send(void)
-{
-	uint8_t i, intr_state, timeout;
 
+uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout)
+{
+	uint8_t intr_state;
 	if (!usb_configuration) return 1;
 	intr_state = SREG;
 	cli();
-	SetEP(KEYBOARD_ENDPOINT) ;
-	timeout = FrameNumber() + 50;
+	timeout = FrameNumber() + timeout;
+	SetEP(endpoint);
 	while (1) {
-		// are we ready to transmit?
 		if (ReadWriteAllowed()) break;
 		SREG = intr_state;
-		// has the USB gone offline?
 		if (!usb_configuration) return 1;
-		// have we waited too long?
 		if (FrameNumber() == timeout) return 1;
-		// get ready to try checking again
 		intr_state = SREG;
 		cli();
-		SetEP(KEYBOARD_ENDPOINT) ;
+		SetEP(endpoint);
 	}
-	UEDATX=keyboard_report.modifier;UEDATX=keyboard_report.reserved;
-	for (i=0; i<6; i++) {
-		UEDATX = keyboard_report.keycode[i];
-	}
+	for(int i=0;i<buffersize;i++){*buffer++ = UEDATX;}
 	ReleaseTX();
-	keyboard_buffer.keyboard_idle_count = 0;
+	SREG = intr_state;
+	return 0;
+}
+uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout)
+{
+	uint8_t intr_state;
+	if (!usb_configuration) return 1;
+	intr_state = SREG;
+	cli();
+	timeout = FrameNumber() + timeout;
+	SetEP(endpoint);
+	while (1) {
+		if (ReadWriteAllowed()) break;
+		SREG = intr_state;
+		if (!usb_configuration) return 1;
+		if (FrameNumber() == timeout) return 1;
+		intr_state = SREG;
+		cli();
+		SetEP(endpoint);
+	}
+	for(int i=0;i<buffersize;i++){UEDATX = *buffer++;}
+	ReleaseTX();
 	SREG = intr_state;
 	return 0;
 }
@@ -338,50 +352,11 @@ uint8_t usb_keyboard_send_required(){
 	if(keyboard_report.keycode[5]!=keyboard_buffer.keyboard_keys[5]){keyboard_report.keycode[5]=keyboard_buffer.keyboard_keys[5];send_required=1;}
 	return send_required;
 }
-
-uint8_t usb_raw_recv(uint8_t *buffer, uint8_t timeout)
+uint8_t usb_keyboard_send(void)
 {
-	uint8_t intr_state;
-	if (!usb_configuration) return 1;
-	intr_state = SREG;
-	cli();
-	timeout = FrameNumber() + timeout;
-	SetEP(RAW_ENDPOINT_OUT);
-	while (1) {
-		if (ReadWriteAllowed()) break;
-		SREG = intr_state;
-		if (!usb_configuration) return 1;
-		if (FrameNumber() == timeout) return 1;
-		intr_state = SREG;
-		cli();
-		SetEP(RAW_ENDPOINT_OUT);
-	}
-	for(int i=0;i<RAW_EPSIZE;i++){*buffer++ = UEDATX;}
-	ReleaseTX();
-	SREG = intr_state;
-	return 0;
-}
-uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout)
-{
-	uint8_t intr_state;
-	if (!usb_configuration) return 1;
-	intr_state = SREG;
-	cli();
-	timeout = FrameNumber() + timeout;
-	SetEP(RAW_ENDPOINT_IN);
-	while (1) {
-		if (ReadWriteAllowed()) break;
-		SREG = intr_state;
-		if (!usb_configuration) return 1;
-		if (FrameNumber() == timeout) return 1;
-		intr_state = SREG;
-		cli();
-		SetEP(RAW_ENDPOINT_IN);
-	}
-	for(int i=0;i<RAW_EPSIZE;i++){UEDATX = *buffer++;}
-	ReleaseTX();
-	SREG = intr_state;
-	return 0;
+	uint8_t send_required=usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	if(send_required==0)keyboard_buffer.keyboard_idle_count = 0;
+	return send_required;
 }
 /**************************************************************************
 *
@@ -391,74 +366,6 @@ uint8_t usb_raw_send(const uint8_t *buffer, uint8_t timeout)
 // USB Device Interrupt - handle all device-level events
 // the transmit buffer flushing is triggered by the start of frame
 //	General interrupt
-/*
-uint8_t USB_INT_HasOccurred(const uint8_t Interrupt){
-switch (Interrupt)
-{
-case USB_INT_WAKEUPI:
-return (UDINT  & (1 << WAKEUPI));
-case USB_INT_SUSPI:
-return (UDINT  & (1 << SUSPI));
-case USB_INT_EORSTI:
-return (UDINT  & (1 << EORSTI));
-case USB_INT_SOFI:
-return (UDINT  & (1 << SOFI));
-case USB_INT_RXSTPI:
-return (UEINTX & (1 << RXSTPI));
-default:
-return 0;
-}
-}
-uint8_t USB_INT_IsEnabled(const uint8_t Interrupt)
-{
-switch (Interrupt)
-{
-case USB_INT_WAKEUPI:
-return (UDIEN  & (1 << WAKEUPE));
-case USB_INT_SUSPI:
-return (UDIEN  & (1 << SUSPE));
-case USB_INT_EORSTI:
-return (UDIEN  & (1 << EORSTE));
-case USB_INT_SOFI:
-return (UDIEN  & (1 << SOFE));
-case USB_INT_RXSTPI:
-return (UEIENX & (1 << RXSTPE));
-default:
-return 0;
-}
-}
-void USB_INT_Clear(const uint8_t Interrupt){
-switch (Interrupt)
-{
-case USB_INT_WAKEUPI:
-UDINT  &= ~(1 << WAKEUPI);
-break;
-case USB_INT_SUSPI:
-UDINT  &= ~(1 << SUSPI);
-break;
-case USB_INT_EORSTI:
-UDINT  &= ~(1 << EORSTI);
-break;
-case USB_INT_SOFI:
-UDINT  &= ~(1 << SOFI);
-break;
-case USB_INT_RXSTPI:
-UEINTX &= ~(1 << RXSTPI);
-break;
-default:
-return false;
-}
-}
-*/
-void EVENT_USB_Device_StartOfFrame(void)
-{
-	static uint8_t count;
-	if (++count % 60) return;
-	count = 0;
-	if (ReadWriteAllowed()&& EnableRecv){
-		EnableRecv=usb_raw_recv((uint8_t *)&raw_report_out, 5);
-	}
-}
 ISR(USB_GEN_vect)
 {
 	uint8_t intbits;
@@ -505,7 +412,6 @@ ISR(USB_GEN_vect)
 //	Endpoint 0 interrupt
 ISR(USB_COM_vect)
 {
-	uint8_t intbits;
 	const uint8_t *list;
 	const uint8_t *cfg;
 	uint8_t i, n, len, en;
@@ -517,10 +423,8 @@ ISR(USB_COM_vect)
 	uint16_t desc_val;
 	const uint8_t *desc_addr;
 	uint8_t	desc_length;
-
 	SetEP(0);
-	intbits = UEINTX;
-	if (intbits & (1<<RXSTPI)) {
+	if (ReceivedSetupInt()) {
 		bmRequestType = UEDATX;
 		bRequest = UEDATX;
 		wValue = UEDATX;
@@ -529,7 +433,7 @@ ISR(USB_COM_vect)
 		wIndex |= (UEDATX << 8);
 		wLength = UEDATX;
 		wLength |= (UEDATX << 8);
-		UEINTX = ~((1<<RXSTPI) | (1<<RXOUTI) | (1<<TXINI));
+		ClearSetupInt();
 		//////////////////////////////////////////////////
 		if (bRequest == GET_DESCRIPTOR) {
 			list = (const uint8_t *)descriptor_list;
@@ -704,6 +608,7 @@ ISR(USB_COM_vect)
 			}
 			if (bmRequestType == 0x21 ){
 				if (bRequest == HID_SET_IDLE) {
+					ClearIN();
 					return;
 				}
 				if (bRequest == HID_SET_REPORT) {
@@ -721,5 +626,7 @@ ISR(USB_COM_vect)
 				}
 			}
 		}
-		Stall();	// stall
 	}
+	Stall();	// stall
+}
+
