@@ -5,6 +5,9 @@
 //row D0 D1 D2 D3 D5
 //col F0, F1, E6, C7, C6, B6, D4, B1, B0, B5, B4, D7, D6, B3
 uint8_t r,c,i,delayval;
+uint8_t FN=0;
+uint8_t delay_after=0;
+uint8_t delay_before=0;
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
 //                        1  2  3  4  5  6  7 8 9 10 11 12 13 14
@@ -15,40 +18,50 @@ uint8_t LED_caps=2;
 uint8_t LED_GPIO1=17;
 uint8_t LED_GPIO2=18;
 */
-uint8_t hexaKeys[ROWS][COLS] = {
-	{KEY_ESC,       KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,        KEY_MINUS,     KEY_EQUAL,      KEY_BACKSPACE},
-	{KEY_TAB  ,     KEY_Q,KEY_W,KEY_E,KEY_R,KEY_T,KEY_Y,KEY_U,KEY_I,KEY_O,KEY_P,        KEY_LEFT_BRACE,KEY_RIGHT_BRACE,KEY_BACKSLASH},
-	{KEY_CAPS_LOCK, KEY_A,KEY_S,KEY_D,KEY_F,KEY_G,KEY_H,KEY_J,KEY_K,KEY_L,KEY_SEMICOLON,KEY_QUOTE,     0x00,           KEY_ENTER},
-	{KEY_LEFT_SHIFT,0x00 ,KEY_Z,KEY_X,KEY_C,KEY_V,KEY_B,KEY_N,KEY_M,KEY_COMMA,KEY_PERIOD,0x00, KEY_SLASH,   KEY_UP       },
-	{KEY_LEFT_CTRL,0x00,KEY_LEFT_ALT ,0x00,0x00,KEY_SPACE,0x00,KEY_SLASH,KEY_LEFT,0x00,0x00,KEY_RIGHT_CTRL,KEY_DOWN, KEY_RIGHT  }
+uint8_t hexaKeys0[ROWS][COLS] = {
+	{KEY_ESC,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_MINUS,KEY_EQUAL,KEY_BACKSPACE},
+	{KEY_TAB,KEY_Q,KEY_W,KEY_E,KEY_R,KEY_T,KEY_Y,KEY_U,KEY_I,KEY_O,KEY_P,KEY_LEFT_BRACE,KEY_RIGHT_BRACE,KEY_BACKSLASH},
+	{KEY_CAPS_LOCK,KEY_A,KEY_S,KEY_D,KEY_F,KEY_G,KEY_H,KEY_J,KEY_K,KEY_L,KEY_SEMICOLON,KEY_QUOTE,0x00,KEY_ENTER},
+	{KEY_LEFT_SHIFT,0x00,KEY_Z,KEY_X,KEY_C,KEY_V,KEY_B,KEY_N,KEY_M,KEY_COMMA,KEY_PERIOD,0x00, KEY_SLASH,KEY_UP},
+	{KEY_LEFT_CTRL,KEY_FN,KEY_LEFT_ALT,0x00,0x00,KEY_SPACE,0x00,KEY_SLASH,KEY_LEFT,0x00,KEY_FN,KEY_RIGHT_CTRL,KEY_DOWN, KEY_RIGHT}
 };
-uint8_t hexaKeys2[ROWS][COLS] = {
+uint8_t hexaKeys1[ROWS][COLS] = {
 	{KEY_TILDE,KEY_F1,KEY_F2,KEY_F3,KEY_F4,KEY_F5,KEY_F6,KEY_F7,KEY_F8,KEY_F9,KEY_F10,KEY_F11,KEY_F12, KEY_DELETE},
 	{KEY_TAB,KEYPAD_1,KEYPAD_2,KEYPAD_3,KEYPAD_4,KEYPAD_5,KEYPAD_6,KEYPAD_7,KEYPAD_8,KEYPAD_9,KEYPAD_0,KEYPAD_MINUS,KEYPAD_PLUS,KEY_BACKSLASH},
-	{KEY_CAPS_LOCK, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,  KEY_ENTER},
-	{KEY_LEFT_SHIFT,0x00,KEY_NUM_LOCK ,KEY_SCROLL_LOCK,KEY_INSERT,KEY_PRINTSCREEN,0x00,0x00,0x00,0x00,0x00,0x00,0x00, KEY_UP       },
-	{KEY_LEFT_CTRL,0x00,KEY_LEFT_ALT ,0x00,0x00,KEY_SPACE,0x00,0x00,KEY_LEFT,0x00,0x00,KEY_RIGHT_CTRL,KEY_DOWN, KEY_RIGHT  }
+	{KEY_CAPS_LOCK, MOUSE_LEFT,MOUSE_MID,MOUSE_RIGHT,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,KEY_ENTER},
+	{KEY_LEFT_SHIFT,0x00,KEY_NUM_LOCK ,KEY_SCROLL_LOCK,KEY_INSERT,KEY_PRINTSCREEN,0x00,0x00,0x00,0x00,0x00,0x00,0x00,KEY_UP},
+	{KEY_LEFT_CTRL,KEY_FN,KEY_LEFT_ALT,0x00,0x00,KEY_SPACE,0x00,0x00,KEY_LEFT,0x00,KEY_FN,KEY_RIGHT_CTRL,KEY_DOWN,KEY_RIGHT}
 };
-//0,FN,modifykey,keys,mousekey,system,cusumer,Pressstate
-//FN=0x40,modifykey=0x20,keys=0x10,mousekey=0x08,system=0x04,cusumer=0x02
-uint8_t keymask[ROWS][COLS] = {
-	{0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10},
-	{0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10},
-	{0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x10},
-	{0x20,0x00,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x10,0x10},
-	{0x20,0x40,0x20,0x00,0x00,0x10,0x00,0x10,0x10,0x00,0x40,0x20,0x10,0x10}
-};
+//keymask_bits:7-press 654-hexatype0 3-press 210-hexatype1 
+//type: 1-key 2-modifykey 3-mousekey 4-systemkey 5-consumerkey 6-FN 7,8-other
 
+uint8_t keymask[ROWS][COLS] = {
+	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x11,0x13,0x13,0x13,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x11},
+	{0x22,0x00,0x11,0x11,0x11,0x11,0x10,0x10,0x10,0x10,0x10,0x00,0x10,0x11},
+	{0x22,0x66,0x22,0x00,0x00,0x11,0x00,0x10,0x11,0x00,0x66,0x22,0x11,0x11}
+};
+void EVENT_USB_Device_StartOfFrame()
+{
+	static uint8_t count;
+	if (++count % 50) return;
+	count = 0;
+	if (ReadWriteAllowed()&& EnableRecv){
+		if(keyboard_buffer.enable_pressing==0)	{EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,RAW_EPSIZE ,0);}
+		else { EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,2, 0);}
+	}
+}
 void ResetMatrix(uint8_t mask,uint16_t address){
 	uint8_t j=0;
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < ROWS; c++) {
 			switch (mask){
 				case 0:
-				hexaKeys[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
+				hexaKeys0[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
 				break;
 				case 1:
-				hexaKeys2[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
+				hexaKeys1[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
 				break;
 				case 2:
 				keymask[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
@@ -60,25 +73,22 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 }
 void ResetMatrixFormEEP(){
 	//////////////////////////////////menu///////////////////////
-	//(u8)address_row,(u8)address_col,(u16)address_hexakeys,(u16)address_hexakeys2,(u16)address_keymask
+	//(u8)address_row,(u8)address_col,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
 	//0,                1,               2 ,         3,         4,         5,         6,          7
 	//   8            8+5=13               8+5+14=27               8+5+14+70=97       8+5+14+140=167
 	uint8_t address_row=eeprom_read_byte((uint8_t *)0);
 	uint8_t address_col=eeprom_read_byte((uint8_t *)1);
-	uint16_t address_hexakeys=eeprom_read_word((uint16_t *)2);
-	uint16_t address_hexakeys2=eeprom_read_word((uint16_t *)4);
+	uint16_t address_hexakeys0=eeprom_read_word((uint16_t *)2);
+	uint16_t address_hexaKeys1=eeprom_read_word((uint16_t *)4);
 	uint16_t address_keymask=eeprom_read_word((uint16_t *)6);
 	uint8_t j;
 	///////////////////////////////////
 	if(address_row==8){for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_row));}}
 	if(address_col==13){for( j=0;j<COLS;j++){colPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_col));}}
-	if(address_hexakeys==27){ResetMatrix(0,address_hexakeys);}
-	if(address_hexakeys2==97){ResetMatrix(1,address_hexakeys2);}
+	if(address_hexakeys0==27){ResetMatrix(0,address_hexakeys0);}
+	if(address_hexaKeys1==97){ResetMatrix(1,address_hexaKeys1);}
 	if(address_keymask==167){ResetMatrix(2,address_keymask);}
 }
-uint8_t FN=0;
-uint8_t delay_after=0;
-uint8_t delay_before=0;
 void init_cols(){
 	for ( i=0; i<COLS; i++){
 		pinMode(colPins[i],INPUT);
@@ -123,40 +133,61 @@ void LED(){
 	}
 }
 void XDMode(){
-	FN=0;
+	FN=0xF0;
 	for (r = 0; r < ROWS; r++) {
 		pinMode(rowPins[r],OUTPUT);
 		digitalWrite(rowPins[r],LOW);
 		for (c = 0; c < COLS; c++) {
-			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x01;} else {keymask[r][c]|= 0x01;delay_after=_delay_after;}
-			if(keymask[r][c]==0x41)FN=0x02;
+			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;} 
+			else {keymask[r][c]|= 0x88;delay_after=_delay_after;}
+			if(keymask[r][c]==0xEE )FN=0x0F;
 		}
 		init_rows();
 	}
 	releaseAll();
+	releaseAllmousekey();
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
-			if((keymask[r][c] | FN)== 0x21) pressModifierKeys(hexaKeys[r][c]);
-			else if((keymask[r][c] | FN)== 0x23) pressModifierKeys(hexaKeys[r][c]);
-			else if((keymask[r][c] | FN)== 0x11) presskey(hexaKeys[r][c]);
-			else if((keymask[r][c] | FN)== 0x13) presskey(hexaKeys2[r][c]);
+	       switch(keymask[r][c]&FN){
+				case 0x90:
+				presskey(hexaKeys0[r][c]);
+				break;
+				case 0xA0:
+				pressModifierKeys(hexaKeys0[r][c]);
+				break;
+				case 0xB0:
+				pressmousekey(hexaKeys0[r][c]);
+				break;
+				case 0xC0:
+				//presssystemkey(hexaKeys0[r][c]);
+				break;
+				case 0xD0:
+				//pressconsumerkey(hexaKeys0[r][c]);
+				break;
+				case 0x09:
+				presskey(hexaKeys1[r][c]);
+				break;
+				case 0x0A:
+				pressModifierKeys(hexaKeys1[r][c]);
+				break;
+				case 0x0B:
+				pressmousekey(hexaKeys1[r][c]);
+				break;
+				case 0x0C:
+				//presssystemkey(hexaKeys1[r][c]);
+				break;
+				case 0x0D:
+				//pressconsumerkey(hexaKeys1[r][c]);
+				break;
+			}
 		}
 	}
-	if(usb_keyboard_send_required())delay_before=_delay_before	;
-	if(delay_after==_delay_after && delay_before==1)usb_keyboard_send();
-	if(delay_after==1)usb_keyboard_send();
+	if(usb_keyboard_send_required())delay_before=_delay_before;
+	if(usb_mouse_send_required())delay_before=_delay_before;
+	if(delay_after==_delay_after && delay_before==1){usb_keyboard_send();usb_mouse_send();}
+	if(delay_after==1){usb_keyboard_send();usb_mouse_send();}
 	if(delay_after>0)delay_after-=1;
 	if(delay_before>0)delay_before-=1;
-}
-void EVENT_USB_Device_StartOfFrame()
-{
-	static uint8_t count;
-	if (++count % 50) return;
-	count = 0;
-	if (ReadWriteAllowed()&& EnableRecv){
-		if(keyboard_buffer.enable_pressing==0)	{EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,RAW_EPSIZE ,0);}
-		else { EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,2, 0);}
-	}
 }
 void eepwrite(){
 	//	address,word1,word2,word3

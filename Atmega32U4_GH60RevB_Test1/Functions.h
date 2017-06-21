@@ -33,8 +33,8 @@ void closeJtag();
 
 #define ROWS  5
 #define COLS  14
-extern  uint8_t hexaKeys[ROWS][COLS] ;
-extern  uint8_t hexaKeys2[ROWS][COLS];
+extern  uint8_t hexaKeys0[ROWS][COLS] ;
+extern  uint8_t hexaKeys1[ROWS][COLS];
 extern  uint8_t keymask[ROWS][COLS];
 extern  uint8_t rowPins[ROWS];
 extern  uint8_t colPins[COLS];

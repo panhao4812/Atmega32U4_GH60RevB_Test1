@@ -27,6 +27,15 @@ void ClearRaw(){
 	memset(&raw_report_out, 0,sizeof(raw_report_out));
 }
 
+void pressmousekey(uint8_t key){
+	mouse_buffer.mouse_keys|=key;
+}
+void releasemousekey(uint8_t key){
+	mouse_buffer.mouse_keys&=~key;
+}
+void releaseAllmousekey(){
+	mouse_buffer.mouse_keys=0x00;
+}
 uint8_t releasekey(uint8_t key)
 {
 	uint8_t i;
@@ -73,28 +82,101 @@ void releaseModifierKeys(uint8_t key)
 	keyboard_buffer.keyboard_modifier_keys&=~key;
 }
 uint8_t usb_keyboard_send_required(){
-	uint8_t send_required=0;
-	if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys){keyboard_report.modifier = keyboard_buffer.keyboard_modifier_keys;send_required=1;}
-	if(keyboard_report.keycode[0]!=keyboard_buffer.keyboard_keys[0]){keyboard_report.keycode[0]=keyboard_buffer.keyboard_keys[0];send_required=1;}
-	if(keyboard_report.keycode[1]!=keyboard_buffer.keyboard_keys[1]){keyboard_report.keycode[1]=keyboard_buffer.keyboard_keys[1];send_required=1;}
-	if(keyboard_report.keycode[2]!=keyboard_buffer.keyboard_keys[2]){keyboard_report.keycode[2]=keyboard_buffer.keyboard_keys[2];send_required=1;}
-	if(keyboard_report.keycode[3]!=keyboard_buffer.keyboard_keys[3]){keyboard_report.keycode[3]=keyboard_buffer.keyboard_keys[3];send_required=1;}
-	if(keyboard_report.keycode[4]!=keyboard_buffer.keyboard_keys[4]){keyboard_report.keycode[4]=keyboard_buffer.keyboard_keys[4];send_required=1;}
-	if(keyboard_report.keycode[5]!=keyboard_buffer.keyboard_keys[5]){keyboard_report.keycode[5]=keyboard_buffer.keyboard_keys[5];send_required=1;}
-	return send_required;
+uint8_t send_required_t=0;
+	if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys)
+	{keyboard_report.modifier = keyboard_buffer.keyboard_modifier_keys;send_required_t=1;}
+	if(keyboard_report.keycode[0]!=keyboard_buffer.keyboard_keys[0])
+	{keyboard_report.keycode[0]=keyboard_buffer.keyboard_keys[0];send_required_t=1;}
+	if(keyboard_report.keycode[1]!=keyboard_buffer.keyboard_keys[1])
+	{keyboard_report.keycode[1]=keyboard_buffer.keyboard_keys[1];send_required_t=1;}
+	if(keyboard_report.keycode[2]!=keyboard_buffer.keyboard_keys[2])
+	{keyboard_report.keycode[2]=keyboard_buffer.keyboard_keys[2];send_required_t=1;}
+	if(keyboard_report.keycode[3]!=keyboard_buffer.keyboard_keys[3])
+	{keyboard_report.keycode[3]=keyboard_buffer.keyboard_keys[3];send_required_t=1;}
+	if(keyboard_report.keycode[4]!=keyboard_buffer.keyboard_keys[4])
+	{keyboard_report.keycode[4]=keyboard_buffer.keyboard_keys[4];send_required_t=1;}
+	if(keyboard_report.keycode[5]!=keyboard_buffer.keyboard_keys[5])
+	{keyboard_report.keycode[5]=keyboard_buffer.keyboard_keys[5];send_required_t=1;}
+	if(send_required_t)keyboard_buffer.Send_Required=send_required_t;
+	return send_required_t;	
 }
-uint8_t usb_keyboard_send(void)
+uint8_t usb_keyboard_send()
 {
-	uint8_t send_required=usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
-	if(send_required==0)keyboard_buffer.keyboard_idle_count = 0;
-	return send_required;
+	if(keyboard_buffer.Send_Required){
+	keyboard_buffer.Send_Required=0;
+		uint8_t send_required_t=usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+		return send_required_t;
+	}return 1;
+}
+uint8_t usb_mouse_send_required(){
+	uint8_t send_required_t=0;
+	if(mouse_report.mouse.buttons!=mouse_buffer.mouse_keys)
+	{
+		mouse_report.mouse.buttons=mouse_buffer.mouse_keys;
+		send_required_t=REPORT_ID_MOUSE;
+	}
+	if(mouse_report.system_keys.usage!=mouse_buffer.system_keys)
+	{
+		mouse_report.system_keys.usage=mouse_buffer.system_keys;
+		send_required_t=REPORT_ID_MOUSE;
+	}
+	if(mouse_report.consumer_keys.usage!=mouse_buffer.consumer_keys)
+	{
+		mouse_report.consumer_keys.usage=mouse_buffer.consumer_keys;
+		send_required_t=REPORT_ID_MOUSE;
+	}
+	if(send_required_t)mouse_buffer.Send_Required=send_required_t;
+	return send_required_t;
+}
+uint8_t usb_mouse_send(){
+	uint8_t intr_state,timeout;
+	if(mouse_buffer.Send_Required==0)return 1;
+	if (!usb_configured()) return 1;
+	intr_state = SREG;
+	cli();
+	timeout = FrameNumber() + 50;
+	SetEP(MOUSE_ENDPOINT);
+	while (1) {
+		if (ReadWriteAllowed()) break;
+		SREG = intr_state;
+		if (!usb_configured()) return 1;
+		if (FrameNumber() == timeout) return 1;
+		intr_state = SREG;
+		cli();
+		SetEP(MOUSE_ENDPOINT);
+	}
+	switch(mouse_buffer.Send_Required){
+		case REPORT_ID_MOUSE:
+		mouse_buffer.Send_Required=0;
+		UEDATX=mouse_report.mouse.report_id;
+		UEDATX=mouse_report.mouse.buttons;
+		UEDATX=mouse_report.mouse.x;
+		UEDATX=mouse_report.mouse.y;
+		UEDATX=mouse_report.mouse.v;
+		UEDATX=mouse_report.mouse.h;
+		break;
+		case REPORT_ID_SYSTEM:
+		mouse_buffer.Send_Required=0;
+		UEDATX=mouse_report.system_keys.report_id;
+		UEDATX=LSB(mouse_report.system_keys.usage);
+		UEDATX=MSB(mouse_report.system_keys.usage);
+		break;
+		case REPORT_ID_CONSUMER:
+		mouse_buffer.Send_Required=0;
+		UEDATX=mouse_report.consumer_keys.report_id;
+		UEDATX=LSB(mouse_report.consumer_keys.usage);
+		UEDATX=MSB(mouse_report.consumer_keys.usage);
+		break;
+	}
+	ReleaseTX();
+	SREG = intr_state;
+	return 0;
 }
 #if defined(__AVR_ATmega32U4__)
 void closeJtag(){
 	MCUCR = (1<<JTD);
 	MCUCR = (1<<JTD);
 }
-
 void pinMode(uint8_t IO,uint8_t value){
 	switch(IO){
 		case 0: if(value){DDRB|= (1<<0);}else{DDRB &= ~(1<<0);}break;

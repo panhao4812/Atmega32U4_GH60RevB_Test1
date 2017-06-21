@@ -39,9 +39,15 @@ volatile uint8_t EnableRecv;//eep change
 void ClearKeyboard();
 void ClearMouse();
 void ClearRaw();
+void releaseAllmousekey();
+void releasemousekey(uint8_t key);
+void pressmousekey(uint8_t key);
 uint8_t usb_keyboard_send_required();		// initialize everything
 uint8_t usb_keyboard_send();
+uint8_t usb_mouse_send_required();
 uint8_t usb_mouse_send();
+uint8_t usb_system_send();
+uint8_t usb_consumer_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
@@ -58,7 +64,6 @@ typedef struct {
 	uint16_t usage;
 } __attribute__ ((packed)) report_extra_t;
 typedef struct {
-	uint8_t send_required;
 	report_mouse0_t mouse;
 	report_extra_t system_keys;
 	report_extra_t consumer_keys;
@@ -85,6 +90,7 @@ typedef struct {
 	// either way, so this variable only stores the setting since we
 	// are required to be able to report which setting is in use.
 	uint8_t mouse_protocol;
+	uint8_t Send_Required;
 } __attribute__ ((packed)) buffer_mouse_t;
 typedef struct {
 	uint8_t keyboard_modifier_keys;
@@ -99,6 +105,7 @@ typedef struct {
 	// either way, so this variable only stores the setting since we
 	// are required to be able to report which setting is in use
 	uint8_t keyboard_protocol;
+	uint8_t Send_Required;
 }__attribute__ ((packed))  buffer_keyboard_t;
 
 report_mouse_t mouse_report;
@@ -231,6 +238,8 @@ buffer_keyboard_t keyboard_buffer;
 #define MOUSE_MID	1<<2
 #define MOUSE_4	1<<3
 #define MOUSE_5	1<<4
+
+#define KEY_FN 0
 
 #define REPORT_ID_MOUSE     1
 #define REPORT_ID_SYSTEM    2

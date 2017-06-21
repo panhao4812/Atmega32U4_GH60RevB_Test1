@@ -244,7 +244,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//endpoint descriptor for endpoint 4
 	0x07,          /* sizeof(usbDescrEndpoint) */
 	0x05,  /* descriptor type = endpoint */
-	0x82, /* IN endpoint number 1 */
+	0x84, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	0x08,0x00,       /* maximum packet size */
 	0x01 /* in ms */
