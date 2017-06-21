@@ -118,12 +118,12 @@ uint8_t usb_mouse_send_required(){
 	if(mouse_report.system_keys.usage!=mouse_buffer.system_keys)
 	{
 		mouse_report.system_keys.usage=mouse_buffer.system_keys;
-		send_required_t=REPORT_ID_MOUSE;
+		send_required_t=REPORT_ID_SYSTEM;
 	}
 	if(mouse_report.consumer_keys.usage!=mouse_buffer.consumer_keys)
 	{
 		mouse_report.consumer_keys.usage=mouse_buffer.consumer_keys;
-		send_required_t=REPORT_ID_MOUSE;
+		send_required_t=REPORT_ID_CONSUMER;
 	}
 	if(send_required_t)mouse_buffer.Send_Required=send_required_t;
 	return send_required_t;
