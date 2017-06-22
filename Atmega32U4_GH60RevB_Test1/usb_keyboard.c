@@ -384,6 +384,16 @@ uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint
 // USB Device Interrupt - handle all device-level events
 // the transmit buffer flushing is triggered by the start of frame
 //	General interrupt
+void EVENT_USB_Device_StartOfFrame()
+{
+	static uint8_t count;
+	if (++count % 50) return;
+	count = 0;
+	if (ReadWriteAllowed()&& EnableRecv){
+		if(keyboard_buffer.enable_pressing==0)	{EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,RAW_EPSIZE ,0);}
+		else { EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,2, 0);}
+	}
+}
 ISR(USB_GEN_vect)
 {
 	uint8_t intbits;

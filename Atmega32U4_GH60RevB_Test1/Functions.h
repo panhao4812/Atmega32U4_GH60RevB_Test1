@@ -30,7 +30,7 @@ void digitalWrite(uint8_t IO,uint8_t value);
 uint8_t digitalRead(uint8_t IO);
 void closeJtag();
 //////////////////////override//////////////////////////
-
+uint8_t FN;
 #define ROWS  5
 #define COLS  14
 extern  uint8_t hexaKeys0[ROWS][COLS] ;
@@ -45,6 +45,10 @@ void init_cols();
 void init_rows();
 void init_LED();
 void pokerMode();
-
+void XDMode();
+void ResetMatrixFormEEP();
+void Open_LED();
+void Close_LED();
+void eepwrite();
 ////////////////////////////////////////////////////////
 #endif /* */
