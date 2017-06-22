@@ -72,8 +72,8 @@ while (1) {//÷ÿ∆Ù
 	keyboard_buffer.enable_pressing=1;
 	ResetMatrixFormEEP();
 	_delay_ms(500);
-	releaseAll();
-	usb_keyboard_send();
+	releaseAllkeyboardkeys();
+	releaseAllmousekeys();
 	while (1) {
 		eepwrite();
 		if(keyboard_buffer.enable_pressing==2){

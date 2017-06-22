@@ -29,9 +29,8 @@
 #define MOUSE_BUFFER		EP_DOUBLE_BUFFER
 void usb_init();			// initialize everything
 uint8_t usb_configured();		// is the USB port configured
-
+void releaseAllkeyboardkeys();
 uint8_t releasekey(uint8_t key);
-void releaseAll();
 uint8_t presskey(uint8_t key);
 void pressModifierKeys(uint8_t key);
 void releaseModifierKeys(uint8_t key);
@@ -39,15 +38,17 @@ volatile uint8_t EnableRecv;//eep change
 void ClearKeyboard();
 void ClearMouse();
 void ClearRaw();
-void releaseAllmousekey();
+void releaseAllmousekeys();
 void releasemousekey(uint8_t key);
 void pressmousekey(uint8_t key);
+void releasesystemkey(uint8_t key);
+void presssystemkey(uint8_t key);
+void releaseconsumerkey(uint8_t key);
+void pressconsumerkey(uint8_t key);
 uint8_t usb_keyboard_send_required();		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send_required();
 uint8_t usb_mouse_send();
-uint8_t usb_system_send();
-uint8_t usb_consumer_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
@@ -240,10 +241,47 @@ buffer_keyboard_t keyboard_buffer;
 #define MOUSE_5	1<<4
 
 #define KEY_FN 0
-
 #define REPORT_ID_MOUSE     1
 #define REPORT_ID_SYSTEM    2
 #define REPORT_ID_CONSUMER  3
+
+#define AUDIO_MUTE              0xE2
+#define AUDIO_VOL_UP            0xE9
+#define AUDIO_VOL_DOWN          0xEA
+#define TRANSPORT_NEXT_TRACK    0xB5
+#define TRANSPORT_PREV_TRACK    0xB6
+#define TRANSPORT_STOP          0xB7
+#define TRANSPORT_STOP_EJECT    0xCC
+#define TRANSPORT_PLAY_PAUSE    0xCD
+
+/* Generic Desktop Page(0x01) - system power control */
+#define SYSTEM_POWER_DOWN       0x81
+#define SYSTEM_SLEEP            0x82
+#define SYSTEM_WAKE_UP          0x83
+
+/*
+//application launch 
+#define AL_CC_CONFIG            0x0183
+#define AL_EMAIL                0x018A
+#define AL_CALCULATOR           0x0192
+#define AL_LOCAL_BROWSER        0x0194
+//application control 
+#define AC_SEARCH               0x0221
+#define AC_HOME                 0x0223
+#define AC_BACK                 0x0224
+#define AC_FORWARD              0x0225
+#define AC_STOP                 0x0226
+#define AC_REFRESH              0x0227
+#define AC_BOOKMARKS            0x022A
+//supplement for Bluegiga iWRAP HID(not supported by Windows?) 
+#define AL_LOCK                 0x019E
+#define TRANSPORT_RECORD        0x00B2
+#define TRANSPORT_FAST_FORWARD  0x00B3
+#define TRANSPORT_REWIND        0x00B4
+#define TRANSPORT_EJECT         0x00B8
+#define AC_MINIMIZE             0x0206
+//*/
+
 // Everything below this point is only intended for usb_serial.c
 // Misc functions to wait for ready and send/receive packets
 /*

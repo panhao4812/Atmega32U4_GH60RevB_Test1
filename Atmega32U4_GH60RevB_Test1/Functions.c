@@ -14,8 +14,8 @@ void XDMode(){
 		}
 		init_rows();
 	}
-	releaseAll();
-	releaseAllmousekey();
+	releaseAllkeyboardkeys();
+	releaseAllmousekeys();
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
 			switch(keymask[r][c]&FN){
@@ -29,10 +29,10 @@ void XDMode(){
 				pressmousekey(hexaKeys0[r][c]);
 				break;
 				case 0xC0:
-				//presssystemkey(hexaKeys0[r][c]);
+				presssystemkey(hexaKeys0[r][c]);
 				break;
 				case 0xD0:
-				//pressconsumerkey(hexaKeys0[r][c]);
+				pressconsumerkey(hexaKeys0[r][c]);
 				break;
 				case 0x09:
 				presskey(hexaKeys1[r][c]);
@@ -44,10 +44,10 @@ void XDMode(){
 				pressmousekey(hexaKeys1[r][c]);
 				break;
 				case 0x0C:
-				//presssystemkey(hexaKeys1[r][c]);
+				presssystemkey(hexaKeys1[r][c]);
 				break;
 				case 0x0D:
-				//pressconsumerkey(hexaKeys1[r][c]);
+				pressconsumerkey(hexaKeys1[r][c]);
 				break;
 			}
 		}
@@ -155,15 +155,28 @@ void ClearRaw(){
 	memset( &raw_report_in, 0,sizeof(raw_report_in));
 	memset(&raw_report_out, 0,sizeof(raw_report_out));
 }
-
+void presssystemkey(uint8_t key){
+	mouse_buffer.system_keys=0x0000|key;
+}
+void pressconsumerkey(uint8_t key){
+	mouse_buffer.consumer_keys=0x0000|key;
+}
+void pressconsumerkeyAL(uint8_t key){
+	mouse_buffer.consumer_keys=0x0100|key;
+}
+void pressconsumerkeyAC(uint8_t key){
+	mouse_buffer.consumer_keys=0x0200|key;
+}
 void pressmousekey(uint8_t key){
 	mouse_buffer.mouse_keys|=key;
 }
 void releasemousekey(uint8_t key){
 	mouse_buffer.mouse_keys&=~key;
 }
-void releaseAllmousekey(){
+void releaseAllmousekeys(){
 	mouse_buffer.mouse_keys=0x00;
+	mouse_buffer.system_keys=0x0000;
+	mouse_buffer.consumer_keys=0x0000;
 }
 uint8_t releasekey(uint8_t key)
 {
@@ -178,7 +191,7 @@ uint8_t releasekey(uint8_t key)
 	}
 	return send_required;
 }
-void releaseAll()
+void releaseAllkeyboardkeys()
 {
 	uint8_t i;
 	for ( i=0; i < 6; i++) {
