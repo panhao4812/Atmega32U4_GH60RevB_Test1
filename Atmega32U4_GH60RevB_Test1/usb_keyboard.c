@@ -269,32 +269,7 @@ const struct usb_string_descriptor_struct PROGMEM string2 = {
 	3,
 	STR_PRODUCT
 };
-const struct descriptor_list_struct {
-	uint16_t	wValue;
-	uint16_t	wIndex;
-	const uint8_t	*addr;
-	uint8_t		length;
-	} PROGMEM descriptor_list[] = {
-	{0x0100, 0x0000, device_descriptor, sizeof(device_descriptor)},
-	{0x0200, 0x0000, config1_descriptor, sizeof(config1_descriptor)},
-	{0x2200, KEYBOARD_INTERFACE, KeyboardReport, sizeof(KeyboardReport)},
-	{0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
-	{0x2200, RAW_INTERFACE, RawReport, sizeof(RawReport)},
-	{0x2100, RAW_INTERFACE, config1_descriptor+RAW_HID_DESC_OFFSET, 9},
-	{0x2200, MOUSE_INTERFACE, MouseReport, sizeof(MouseReport)},
-	{0x2100, MOUSE_INTERFACE, config1_descriptor+MOUSE_HID_DESC_OFFSET, 9},
-	{0x0300, 0x0409, (const uint8_t *)&string0, 4},
-	{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},
-	{0x0302, 0x0409, (const uint8_t *)&string2, sizeof(STR_PRODUCT)}
-};
-#define NUM_DESC_LIST (sizeof(descriptor_list)/sizeof(struct descriptor_list_struct))
 
-static const uint8_t PROGMEM endpoint_config_table[] = {
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
-	1, EP_TYPE_INTERRUPT_OUT, EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | MOUSE_BUFFER,
-};
 /**************************************************************************
 *
 *  Public Functions - these are the API intended for the user
@@ -438,19 +413,45 @@ ISR(USB_GEN_vect)
 // other endpoints are manipulated by the user-callable
 // functions, and the start-of-frame interrupt.
 //	Endpoint 0 interrupt
+/*
+typedef struct {
+uint16_t	wValue;
+uint16_t	wIndex;
+const uint8_t	*addr;
+uint8_t		length;
+}__attribute__ ((packed)) report_descriptor;
+const report_descriptor PROGMEM descriptor_list[] = {
+{0x0100, 0x0000, device_descriptor, sizeof(device_descriptor)},
+{0x0200, 0x0000, config1_descriptor, sizeof(config1_descriptor)},
+{0x2200, KEYBOARD_INTERFACE, KeyboardReport, sizeof(KeyboardReport)},
+{0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
+{0x2200, RAW_INTERFACE, RawReport, sizeof(RawReport)},
+{0x2100, RAW_INTERFACE, config1_descriptor+RAW_HID_DESC_OFFSET, 9},
+{0x2200, MOUSE_INTERFACE, MouseReport, sizeof(MouseReport)},
+{0x2100, MOUSE_INTERFACE, config1_descriptor+MOUSE_HID_DESC_OFFSET, 9},
+{0x0300, 0x0409, (const uint8_t *)&string0, 4},
+{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},
+{0x0302, 0x0409, (const uint8_t *)&string2, sizeof(STR_PRODUCT)}
+};
+#define NUM_DESC_LIST (sizeof(descriptor_list)/sizeof(struct descriptor_list_struct))
+*/
+static const uint8_t PROGMEM endpoint_config_table[] = {
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
+	1, EP_TYPE_INTERRUPT_OUT, EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | MOUSE_BUFFER,
+};
 ISR(USB_COM_vect)
 {
-	const uint8_t *list;
-	const uint8_t *cfg;
-	uint8_t i, n, len, en;
 	uint8_t bmRequestType;
 	uint8_t bRequest;
 	uint16_t wValue;
 	uint16_t wIndex;
 	uint16_t wLength;
-	uint16_t desc_val;
+
+	const uint8_t *cfg;	
 	const uint8_t *desc_addr;
-	uint8_t	desc_length;
+	uint8_t i, n, len, en;
 	SetEP(0);
 	if (ReceivedSetupInt()) {
 		bmRequestType = UEDATX;
@@ -464,45 +465,31 @@ ISR(USB_COM_vect)
 		ClearSetupInt();
 		//////////////////////////////////////////////////
 		if (bRequest == GET_DESCRIPTOR) {
-			list = (const uint8_t *)descriptor_list;
-			for (i=0; ; i++) {
-				if (i >= NUM_DESC_LIST) {
-					Stall();  //stall
-					return;
-				}
-				desc_val = pgm_read_word(list);
-				if (desc_val != wValue) {
-					list += sizeof(struct descriptor_list_struct);
-					continue;
-				}
-				list += 2;
-				desc_val = pgm_read_word(list);
-				if (desc_val != wIndex) {
-					list += sizeof(struct descriptor_list_struct)-2;
-					continue;
-				}
-				list += 2;
-				desc_addr = (const uint8_t *)pgm_read_word(list);
-				list += 2;
-				desc_length = pgm_read_byte(list);
-				break;
-			}
+			     if((wValue==0x0100)&&(wIndex==0x0000)){            desc_addr=device_descriptor; len= sizeof(device_descriptor);}
+			else if((wValue==0x0200)&&(wIndex==0x0000)){            desc_addr=config1_descriptor;len= sizeof(config1_descriptor);}
+			else if((wValue==0x2200)&&(wIndex==KEYBOARD_INTERFACE)){desc_addr=KeyboardReport;    len= sizeof(KeyboardReport);}
+			else if((wValue==0x2100)&&(wIndex==KEYBOARD_INTERFACE)){desc_addr=config1_descriptor+KEYBOARD_HID_DESC_OFFSET; len=9;}
+			else if((wValue==0x2200)&&(wIndex==RAW_INTERFACE)){     desc_addr=RawReport;         len= sizeof(RawReport);}
+			else if((wValue==0x2100)&&(wIndex==RAW_INTERFACE)){     desc_addr=config1_descriptor+RAW_HID_DESC_OFFSET; len=9;}
+			else if((wValue==0x2200)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=MouseReport;       len= sizeof(MouseReport);}
+			else if((wValue==0x2100)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=config1_descriptor+MOUSE_HID_DESC_OFFSET; len=9;}
+			else if((wValue==0x0300)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string0; len= 4;}
+			else if((wValue==0x0301)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string1; len= sizeof(STR_MANUFACTURER);}
+			else if((wValue==0x0302)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string2; len= sizeof(STR_PRODUCT);}
+			else {Stall();return;}
 			/////////////////////////////////////////////////////////
-			len = (wLength < 256) ? wLength : 255;
-			if (len > desc_length) len = desc_length;
+			if(wLength>0xff)wLength=0xff;
+			if(wLength<len)len=(uint8_t)wLength;
 			do {
-				// wait for host ready for IN packet
-				do {
-					i = UEINTX;
-				} while (!(i & ((1<<TXINI)|(1<<RXOUTI))));
-				if (i & (1<<RXOUTI)) return;	// abort
-				// send IN packet
-				n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
-				for (i = n; i; i--) {
-					UEDATX = pgm_read_byte(desc_addr++);
+				if(WaitForINOrOUT()){
+					n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
+					for (i = n; i; i--) {
+						UEDATX = pgm_read_byte(desc_addr++);
+					}
+					len -= n;
+					ClearIN();
 				}
-				len -= n;
-				ClearIN();
+				else return;
 			} while (len || n == ENDPOINT0_SIZE);
 			return;
 		}
@@ -693,14 +680,14 @@ ISR(USB_COM_vect)
 }
 
 /*
- * Appendix G: HID Request Support Requirements
- *
- * The following table enumerates the requests that need to be supported by various types of HID class devices.
- * Device type     GetReport   SetReport   GetIdle     SetIdle     GetProtocol SetProtocol
- * ------------------------------------------------------------------------------------------
- * Boot Mouse      Required    Optional    Optional    Optional    Required    Required
- * Non-Boot Mouse  Required    Optional    Optional    Optional    Optional    Optional
- * Boot Keyboard   Required    Optional    Required    Required    Required    Required
- * Non-Boot Keybrd Required    Optional    Required    Required    Optional    Optional
- * Other Device    Required    Optional    Optional    Optional    Optional    Optional
- */
+* Appendix G: HID Request Support Requirements
+*
+* The following table enumerates the requests that need to be supported by various types of HID class devices.
+* Device type     GetReport   SetReport   GetIdle     SetIdle     GetProtocol SetProtocol
+* ------------------------------------------------------------------------------------------
+* Boot Mouse      Required    Optional    Optional    Optional    Required    Required
+* Non-Boot Mouse  Required    Optional    Optional    Optional    Optional    Optional
+* Boot Keyboard   Required    Optional    Required    Required    Required    Required
+* Non-Boot Keybrd Required    Optional    Required    Required    Optional    Optional
+* Other Device    Required    Optional    Optional    Optional    Optional    Optional
+*/
