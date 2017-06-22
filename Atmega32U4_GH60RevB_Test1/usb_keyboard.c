@@ -18,7 +18,7 @@ const uint8_t PROGMEM device_descriptor[] = {
 	ENDPOINT0_SIZE,				// bMaxPacketSize0
 	LSB(VENDOR_ID), MSB(VENDOR_ID),		// idVendor
 	LSB(PRODUCT_ID), MSB(PRODUCT_ID),	// idProduct
-	0x00, 0x01,				// bcdDevice
+	0x00, 0x02,				// bcdDevice
 	1,					// iManufacturer
 	2,					// iProduct
 	0,					// iSerialNumber
@@ -467,7 +467,7 @@ ISR(USB_COM_vect)
 			list = (const uint8_t *)descriptor_list;
 			for (i=0; ; i++) {
 				if (i >= NUM_DESC_LIST) {
-					UECONX = (1<<STALLRQ)|(1<<EPEN);  //stall
+					Stall();  //stall
 					return;
 				}
 				desc_val = pgm_read_word(list);
@@ -559,7 +559,7 @@ ISR(USB_COM_vect)
 				ClearIN();
 				SetEP(i);
 				if (bRequest == SET_FEATURE) {
-					UECONX = (1<<STALLRQ)|(1<<EPEN);
+					Stall();
 					} else {
 					UECONX = (1<<STALLRQC)|(1<<RSTDT)|(1<<EPEN);
 					UERST = (1 << i);
