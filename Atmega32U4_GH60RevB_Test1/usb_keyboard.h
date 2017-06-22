@@ -8,13 +8,12 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <avr/eeprom.h>
-#define STR_MANUFACTURER	L"zian1"
-#define STR_PRODUCT		L"zian_keyboard"
+
 #define VENDOR_ID		0xCCCC//0x16C0
-#define PRODUCT_ID		0x3414//0x047C
+#define PRODUCT_ID		0x3415//0x047C
 #define SUPPORT_ENDPOINT_HALT
 
-#define ENDPOINT0_SIZE		32
+#define ENDPOINT0_SIZE		8
 #define KEYBOARD_INTERFACE	0
 #define KEYBOARD_ENDPOINT	1
 #define KEYBOARD_SIZE		8
@@ -52,6 +51,12 @@ uint8_t usb_mouse_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
+
+typedef struct  {
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	int16_t wString[];
+}__attribute__ ((packed)) usb_string_descriptor_struct;
 typedef struct {
 	uint8_t report_id;
 	uint8_t buttons;

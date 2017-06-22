@@ -249,25 +249,22 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	0x08,0x00,       /* maximum packet size */
 	0x01 /* in ms */
 };
-struct usb_string_descriptor_struct {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	int16_t wString[];
-};
-const struct usb_string_descriptor_struct PROGMEM string0 = {
+const  usb_string_descriptor_struct PROGMEM string0 = {
 	4,
 	3,
 	{0x0409} // language index (0x0409 = US-English)
 };
-const struct usb_string_descriptor_struct PROGMEM string1 = {
-	sizeof(STR_MANUFACTURER),
+const  usb_string_descriptor_struct PROGMEM string1 = {
+	0x0C,
 	3,
-	STR_MANUFACTURER
+	{0x007A,0x0069,0x0061,0x006E,0x0031}//zian1
 };
-const struct usb_string_descriptor_struct PROGMEM string2 = {
-	sizeof(STR_PRODUCT),
+const  usb_string_descriptor_struct PROGMEM string2 = {
+	0x1C,
 	3,
-	STR_PRODUCT
+	{0x007A,0x0069,0x0061,0x006E,0x005F,
+	0x006B,0x0065,0x0079,0x0062,0x006F,
+	0x0061,0x0072,0x0064}  //zian_keyboard
 };
 
 /**************************************************************************
@@ -474,8 +471,8 @@ ISR(USB_COM_vect)
 			else if((wValue==0x2200)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=MouseReport;       len= sizeof(MouseReport);}
 			else if((wValue==0x2100)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=config1_descriptor+MOUSE_HID_DESC_OFFSET; len=9;}
 			else if((wValue==0x0300)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string0; len= 4;}
-			else if((wValue==0x0301)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string1; len= sizeof(STR_MANUFACTURER);}
-			else if((wValue==0x0302)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string2; len= sizeof(STR_PRODUCT);}
+			else if((wValue==0x0301)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string1; len= 0x0C ;} //sizeof(STR_MANUFACTURER)
+			else if((wValue==0x0302)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string2; len= 0x1C;}//sizeof(STR_PRODUCT)
 			else {Stall();return;}
 			/////////////////////////////////////////////////////////
 			if(wLength>0xff)wLength=0xff;
