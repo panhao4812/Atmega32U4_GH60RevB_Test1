@@ -14,18 +14,20 @@
 #define SUPPORT_ENDPOINT_HALT
 
 #define ENDPOINT0_SIZE		8
+
 #define KEYBOARD_INTERFACE	0
 #define KEYBOARD_ENDPOINT	1
 #define KEYBOARD_SIZE		8
-#define KEYBOARD_BUFFER		EP_DOUBLE_BUFFER
-#define RAW_EPSIZE  8
-#define RAW_INTERFACE	1
-#define RAW_ENDPOINT_IN	2
-#define RAW_ENDPOINT_OUT	3
-#define MOUSE_INTERFACE 2
-#define MOUSE_ENDPOINT	4
+
+#define MOUSE_INTERFACE KEYBOARD_INTERFACE+1
+#define MOUSE_ENDPOINT	KEYBOARD_ENDPOINT+1
 #define MOUSE_SIZE		8
-#define MOUSE_BUFFER		EP_DOUBLE_BUFFER
+
+#define RAW_INTERFACE	 MOUSE_INTERFACE+1
+#define RAW_ENDPOINT_IN	 MOUSE_ENDPOINT+1
+#define RAW_ENDPOINT_OUT MOUSE_ENDPOINT+2
+#define RAW_EPSIZE  8
+
 void usb_init();			// initialize everything
 uint8_t usb_configured();		// is the USB port configured
 void releaseAllkeyboardkeys();
@@ -450,10 +452,18 @@ static inline uint8_t FrameNumber()
 ((s) == 16 ? 0x10 :	\
 0x00)))
 
-#define MAX_ENDPOINT		4
+
 
 #define LSB(n) (n & 255)
 #define MSB(n) ((n >> 8) & 255)
+
+#if defined (__AVR_AT90USB162__) || defined (__AVR_AT90USB82__)
+#   define MAX_ENDPOINT     5
+#   define UERST_MASK       0x1E
+#else
+#   define MAX_ENDPOINT     7
+#   define UERST_MASK       0x7E
+#endif
 
 #if defined(__AVR_AT90USB162__)
 #define HW_CONFIG()

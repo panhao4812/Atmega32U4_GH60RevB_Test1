@@ -48,13 +48,13 @@ const uint8_t PROGMEM KeyboardReport[] = {
 	0x95, 0x01,          //   Report Count (1),
 	0x75, 0x03,          //   Report Size (3),
 	0x91, 0x03,          //   Output (Constant),                 ;LED report padding
-	0x95, 0x06,          //   Report Count (6),
+	0x95, 0x06,    //   Report Count (),
 	0x75, 0x08,          //   Report Size (8),
 	0x15, 0x00,          //   Logical Minimum (0),
-	0x25, 0x68,          //   Logical Maximum(104),
+	0x25, 0xFF,          //   Logical Maximum(255),
 	0x05, 0x07,          //   Usage Page (Key Codes),
 	0x19, 0x00,          //   Usage Minimum (0),
-	0x29, 0x68,          //   Usage Maximum (104),
+	0x29, 0xFF,          //   Usage Maximum (255),
 	0x81, 0x00,          //   Input (Data, Array),
 	0xc0                 // End Collection
 };
@@ -153,10 +153,10 @@ const PROGMEM uint8_t  RawReport[] =
 	0x91 ,0x02, //Output (Data,Var,Abs,NWrp,Lin,Pref,NNul,NVol,Bit)
 	0xC0 //End Collection
 };
-#define CONFIG1_DESC_SIZE        (9+9+9+7+9+9+7+7+9+9+7)
-#define KEYBOARD_HID_DESC_OFFSET (9+              9)
-#define RAW_HID_DESC_OFFSET      (9+9+9+7+        9)
-#define MOUSE_HID_DESC_OFFSET    (9+9+9+7+9+9+7+7+9)
+#define CONFIG1_DESC_SIZE        (9+9+9+7+9+9+7+9+9+7+7)
+#define KEYBOARD_HID_DESC_OFFSET (9+9)
+#define MOUSE_HID_DESC_OFFSET    (9+9+9+7+9)
+#define RAW_HID_DESC_OFFSET      (9+9+9+7+9+9+7+9)
 const uint8_t PROGMEM config1_descriptor[] = {
 	9,
 	0x02,
@@ -169,7 +169,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//Interface Descriptor 0/0 HID, 1 Endpoint
 	9,          /* sizeof(usbDescrInterface): length of descriptor in bytes */
 	0x04, /* descriptor type */
-	0,          /* index of this interface */
+	KEYBOARD_INTERFACE,          /* index of this interface */
 	0,          /* alternate setting for this interface */
 	0x01,
 	0x03,
@@ -187,46 +187,15 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//endpoint descriptor for endpoint 1
 	0x07,          /* sizeof(usbDescrEndpoint) */
 	0x05,  /* descriptor type = endpoint */
-	0x81, /* IN endpoint number 1 */
+	0x80+KEYBOARD_ENDPOINT, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
-	0x08,0x00,       /* maximum packet size */
+	KEYBOARD_SIZE,0x00,       /* maximum packet size */
 	0x01, /* in ms */
-	//Interface Descriptor 1/0 HID, 2 Endpoints
-	0x09,
-	0x04,
-	0x01, //interface number
-	0x00,
-	0x02,
-	0x03,
-	0x00,
-	0x00,
-	0x00,
-	//HID descriptor
-	0x09,
-	0x21,
-	0x01,0x11,
-	0x00,
-	0x01,
-	0x22,
-	sizeof(RawReport),0x00,
-	//endpoint descriptor for endpoint 2
-	0x07,          /* sizeof(usbDescrEndpoint) */
-	0x05,  /* descriptor type = endpoint */
-	0x82, /* IN endpoint number 1 */
-	0x03,       /* attrib: Interrupt endpoint */
-	0x08,0x00,       /* maximum packet size */
-	0x01, /* in ms */
-	//endpoint descriptor for endpoint 3
-	0x07,          /* sizeof(usbDescrEndpoint) */
-	0x05,  /* descriptor type = endpoint */
-	0x03, /* IN endpoint number 1 */
-	0x03,       /* attrib: Interrupt endpoint */
-	0x08,0x00,       /* maximum packet size */
-	0x01, /* in ms */
-	//Interface Descriptor 1/0 HID, 2 Endpoints
+	
+	//Interface Descriptor 1/0 HID, 1 Endpoints
 	0x09,
 	0x04,  //interface
-	0x02,  //interface number
+	MOUSE_INTERFACE,  //interface number
 	0x00,
 	0x01,
 	0x03, //hid
@@ -244,9 +213,41 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//endpoint descriptor for endpoint 4
 	0x07,          /* sizeof(usbDescrEndpoint) */
 	0x05,  /* descriptor type = endpoint */
-	0x84, /* IN endpoint number 1 */
+	0x80+MOUSE_ENDPOINT, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
-	0x08,0x00,       /* maximum packet size */
+	MOUSE_SIZE,0x00,       /* maximum packet size */
+	0x01, /* in ms */
+	//Interface Descriptor 1/0 HID, 2 Endpoints
+	0x09,
+	0x04,
+	RAW_INTERFACE, //interface number
+	0x00,
+	0x02,
+	0x03,
+	0x00,
+	0x00,
+	0x00,
+	//HID descriptor
+	0x09,
+	0x21,
+	0x01,0x11,
+	0x00,
+	0x01,
+	0x22,
+	sizeof(RawReport),0x00,
+	//endpoint descriptor for endpoint 2
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	0x80+RAW_ENDPOINT_IN, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	RAW_EPSIZE,0x00,       /* maximum packet size */
+	0x01, /* in ms */
+	//endpoint descriptor for endpoint 3
+	0x07,          /* sizeof(usbDescrEndpoint) */
+	0x05,  /* descriptor type = endpoint */
+	RAW_ENDPOINT_OUT, /* IN endpoint number 1 */
+	0x03,       /* attrib: Interrupt endpoint */
+	RAW_EPSIZE,0x00,       /* maximum packet size */
 	0x01 /* in ms */
 };
 const  usb_string_descriptor_struct PROGMEM string0 = {
@@ -263,7 +264,7 @@ const  usb_string_descriptor_struct PROGMEM string2 = {
 	0x1C,
 	3,
 	{0x007A,0x0069,0x0061,0x006E,0x005F,
-	0x006B,0x0065,0x0079,0x0062,0x006F,
+		0x006B,0x0065,0x0079,0x0062,0x006F,
 	0x0061,0x0072,0x0064}  //zian_keyboard
 };
 
@@ -370,7 +371,6 @@ ISR(USB_GEN_vect)
 {
 	uint8_t intbits;
 	static uint8_t div4=0;
-
 	intbits = UDINT;
 	UDINT = 0;
 	if (intbits & (1<<EORSTI)) {
@@ -384,59 +384,37 @@ ISR(USB_GEN_vect)
 	//////////////////////////////////////////
 	if ((intbits & (1<<SOFI)) && usb_configuration) {
 		EVENT_USB_Device_StartOfFrame();
-
 		if (keyboard_buffer.keyboard_idle_config && (++div4 & 3) == 0) {
 			SetEP(KEYBOARD_ENDPOINT);
 			if (ReadWriteAllowed()) {
 				keyboard_buffer.keyboard_idle_count++;
 				if (keyboard_buffer.keyboard_idle_count == keyboard_buffer.keyboard_idle_config) {
 					keyboard_buffer.keyboard_idle_count = 0;
-					///*
+					/*
 					UEDATX=keyboard_report.modifier;
 					UEDATX=keyboard_report.reserved;
 					for (int i=0; i<6; i++) {
-						UEDATX = keyboard_report.keycode[i];
-					}
-					//*/
+					UEDATX = keyboard_report.keycode[i];
 					ReleaseTX();
-				}
-			}
-		}
-		/////////////////////////////////
+					//*/
+					}
+					}
+					}
+					/////////////////////////////////
 
-	}
+					}
 }
-// USB Endpoint Interrupt - endpoint 0 is handled here.  The
-// other endpoints are manipulated by the user-callable
-// functions, and the start-of-frame interrupt.
-//	Endpoint 0 interrupt
-/*
-typedef struct {
-uint16_t	wValue;
-uint16_t	wIndex;
-const uint8_t	*addr;
-uint8_t		length;
-}__attribute__ ((packed)) report_descriptor;
-const report_descriptor PROGMEM descriptor_list[] = {
-{0x0100, 0x0000, device_descriptor, sizeof(device_descriptor)},
-{0x0200, 0x0000, config1_descriptor, sizeof(config1_descriptor)},
-{0x2200, KEYBOARD_INTERFACE, KeyboardReport, sizeof(KeyboardReport)},
-{0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
-{0x2200, RAW_INTERFACE, RawReport, sizeof(RawReport)},
-{0x2100, RAW_INTERFACE, config1_descriptor+RAW_HID_DESC_OFFSET, 9},
-{0x2200, MOUSE_INTERFACE, MouseReport, sizeof(MouseReport)},
-{0x2100, MOUSE_INTERFACE, config1_descriptor+MOUSE_HID_DESC_OFFSET, 9},
-{0x0300, 0x0409, (const uint8_t *)&string0, 4},
-{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},
-{0x0302, 0x0409, (const uint8_t *)&string2, sizeof(STR_PRODUCT)}
-};
-#define NUM_DESC_LIST (sizeof(descriptor_list)/sizeof(struct descriptor_list_struct))
-*/
+					// USB Endpoint Interrupt - endpoint 0 is handled here.  The
+					// other endpoints are manipulated by the user-callable
+					// functions, and the start-of-frame interrupt.
+					//	Endpoint 0 interrupt
 static const uint8_t PROGMEM endpoint_config_table[] = {
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | EP_DOUBLE_BUFFER,
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | EP_DOUBLE_BUFFER,
 	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
 	1, EP_TYPE_INTERRUPT_OUT, EP_SIZE(RAW_EPSIZE) | EP_DOUBLE_BUFFER,
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | MOUSE_BUFFER,
+	0,
+	0
 };
 ISR(USB_COM_vect)
 {
@@ -446,7 +424,7 @@ ISR(USB_COM_vect)
 	uint16_t wIndex;
 	uint16_t wLength;
 
-	const uint8_t *cfg;	
+	const uint8_t *cfg;
 	const uint8_t *desc_addr;
 	uint8_t i, n, len, en;
 	SetEP(0);
@@ -462,7 +440,7 @@ ISR(USB_COM_vect)
 		ClearSetupInt();
 		//////////////////////////////////////////////////
 		if (bRequest == GET_DESCRIPTOR) {
-			     if((wValue==0x0100)&&(wIndex==0x0000)){            desc_addr=device_descriptor; len= sizeof(device_descriptor);}
+			if((wValue==0x0100)&&(wIndex==0x0000)){            desc_addr=device_descriptor; len= sizeof(device_descriptor);}
 			else if((wValue==0x0200)&&(wIndex==0x0000)){            desc_addr=config1_descriptor;len= sizeof(config1_descriptor);}
 			else if((wValue==0x2200)&&(wIndex==KEYBOARD_INTERFACE)){desc_addr=KeyboardReport;    len= sizeof(KeyboardReport);}
 			else if((wValue==0x2100)&&(wIndex==KEYBOARD_INTERFACE)){desc_addr=config1_descriptor+KEYBOARD_HID_DESC_OFFSET; len=9;}
@@ -500,7 +478,7 @@ ISR(USB_COM_vect)
 			usb_configuration = wValue;
 			ClearIN();
 			cfg = endpoint_config_table;
-			for (i=1; i<=MAX_ENDPOINT; i++) {
+			for (i=1; i<MAX_ENDPOINT; i++) {
 				SetEP(i);
 				en = pgm_read_byte(cfg++);
 				UECONX = en;
@@ -509,7 +487,7 @@ ISR(USB_COM_vect)
 					UECFG1X = pgm_read_byte(cfg++);
 				}
 			}
-			UERST = 0x1E;
+			UERST = UERST_MASK;
 			UERST = 0;
 			return;
 		}
@@ -539,7 +517,7 @@ ISR(USB_COM_vect)
 		if ((bRequest == CLEAR_FEATURE || bRequest == SET_FEATURE)
 		&& bmRequestType == 0x02 && wValue == 0) {
 			i = wIndex & 0x7F;
-			if (i >= 1 && i <= MAX_ENDPOINT) {
+			if (i >0 && i < MAX_ENDPOINT) {
 				ClearIN();
 				SetEP(i);
 				if (bRequest == SET_FEATURE) {
