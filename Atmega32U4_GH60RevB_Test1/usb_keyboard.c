@@ -179,7 +179,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//HID descriptor
 	9,          /* sizeof(usbDescrHID): length of descriptor in bytes */
 	0x21,   /* descriptor type: HID */
-	0x01, 0x11, /* BCD representation of HID version */
+	0x11, 0x01, /* BCD representation of HID version */
 	0x00,       /* target country code */
 	0x01,       /* number of HID Report (or other HID class) Descriptor infos to follow */
 	0x22,       /* descriptor type: report */
@@ -205,7 +205,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//HID descriptor
 	0x09,
 	0x21,
-	0x01,0x11,
+	0x11, 0x01,
 	0x00,
 	0x01,
 	0x22,
@@ -230,7 +230,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	//HID descriptor
 	0x09,
 	0x21,
-	0x01,0x11,
+	0x11, 0x01,
 	0x00,
 	0x01,
 	0x22,
@@ -446,6 +446,7 @@ ISR(USB_COM_vect)
 			else if((wValue==0x2100)&&(wIndex==RAW_INTERFACE)){     desc_addr=config1_descriptor+RAW_HID_DESC_OFFSET; len=9;}
 			else if((wValue==0x2200)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=MouseReport;       len= sizeof(MouseReport);}
 			else if((wValue==0x2100)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=config1_descriptor+MOUSE_HID_DESC_OFFSET; len=9;}
+			
 			else if((wValue==0x0300)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string0; len= 4;}
 			else if((wValue==0x0301)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string1; len= 0x0C ;} //sizeof(STR_MANUFACTURER)
 			else if((wValue==0x0302)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string2; len= 0x1C;}//sizeof(STR_PRODUCT)
