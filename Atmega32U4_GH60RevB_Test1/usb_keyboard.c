@@ -11,14 +11,14 @@ static volatile uint8_t usb_configuration=0;
 const uint8_t PROGMEM device_descriptor[] = {
 	18,					// bLength
 	1,					// bDescriptorType
-	0x00, 0x02,				// bcdUSB
+	0x10,0x01,				// bcdUSB
 	0,					// bDeviceClass
 	0,					// bDeviceSubClass
 	0,					// bDeviceProtocol
 	ENDPOINT0_SIZE,				// bMaxPacketSize0
 	LSB(VENDOR_ID), MSB(VENDOR_ID),		// idVendor
 	LSB(PRODUCT_ID), MSB(PRODUCT_ID),	// idProduct
-	0x00, 0x02,				// bcdDevice
+	0x11, 0x01,				// bcdDevice
 	1,					// iManufacturer
 	2,					// iProduct
 	0,					// iSerialNumber
@@ -190,7 +190,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	0x80+KEYBOARD_ENDPOINT, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	KEYBOARD_SIZE,0x00,       /* maximum packet size */
-	0x01, /* in ms */
+	0x0A, /* in ms */
 	
 	//Interface Descriptor 1/0 HID, 1 Endpoints
 	0x09,
@@ -216,7 +216,7 @@ const uint8_t PROGMEM config1_descriptor[] = {
 	0x80+MOUSE_ENDPOINT, /* IN endpoint number 1 */
 	0x03,       /* attrib: Interrupt endpoint */
 	MOUSE_SIZE,0x00,       /* maximum packet size */
-	0x01, /* in ms */
+	0x0A, /* in ms */
 	//Interface Descriptor 1/0 HID, 2 Endpoints
 	0x09,
 	0x04,
