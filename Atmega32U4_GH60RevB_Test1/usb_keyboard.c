@@ -390,24 +390,22 @@ ISR(USB_GEN_vect)
 				keyboard_buffer.keyboard_idle_count++;
 				if (keyboard_buffer.keyboard_idle_count == keyboard_buffer.keyboard_idle_config) {
 					keyboard_buffer.keyboard_idle_count = 0;
-					/*
 					UEDATX=keyboard_report.modifier;
 					UEDATX=keyboard_report.reserved;
 					for (int i=0; i<6; i++) {
-					UEDATX = keyboard_report.keycode[i];
+						UEDATX = keyboard_report.keycode[i];
+					}
 					ReleaseTX();
-					//*/
-					}
-					}
-					}
-					/////////////////////////////////
-
-					}
+				}
+			}
+		}
+		/////////////////////////////////
+	}
 }
-					// USB Endpoint Interrupt - endpoint 0 is handled here.  The
-					// other endpoints are manipulated by the user-callable
-					// functions, and the start-of-frame interrupt.
-					//	Endpoint 0 interrupt
+// USB Endpoint Interrupt - endpoint 0 is handled here.  The
+// other endpoints are manipulated by the user-callable
+// functions, and the start-of-frame interrupt.
+//	Endpoint 0 interrupt
 static const uint8_t PROGMEM endpoint_config_table[] = {
 	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | EP_DOUBLE_BUFFER,
 	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | EP_DOUBLE_BUFFER,
