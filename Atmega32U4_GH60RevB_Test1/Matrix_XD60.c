@@ -74,22 +74,33 @@ void init_LED(){
 	WS2812Clear();
 	WS2812Send();
 }
+uint8_t red,green,blue;
+uint8_t redm,greenm,bluem;
 void LED(){
 	for ( i=0; i<ledcount; i++){
 		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
 	}
 	if(delayval>=Maxdelay){
+	if(redm)red-=5;else red+=5;	
+	if(greenm)green-=3;else green+=3;
+	if(bluem)blue-=4;else blue+=4;
 		if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2)){
 			for(char i = 0; i<WS2812_COUNT; i++)
 			{
-				WS2812SetRGB(i, 50*i, 255-50*i, 50*i);
+				WS2812SetRGB(i, red, green, blue);
 			}
 			}else{
 			WS2812Clear();
 		}
 		WS2812Send();
 		delayval--;
+		if(red>=255){red=255;redm=1;}
+		if(green>=255){green=255;greenm=1;}
+		if(blue>=255){blue=255;bluem=1;}
+		if(red<=5){red=0;redm=5;}
+		if(green<=5){green=0;greenm=5;}
+		if(blue<=5){blue=0;bluem=5;}
 	}
 	else{
 		if(delayval>0 ){delayval--;}
