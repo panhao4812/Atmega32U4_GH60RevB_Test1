@@ -78,11 +78,15 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 		}
 	}
 }
+#define add1 10
+#define add2 add1+5
+#define add3 add2+14
+#define add4 add3+70
+#define add5 add4+70
 void ResetMatrixFormEEP(){
 	//////////////////////////////////menu///////////////////////
-	//(u8)address_row,(u8)address_col,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
-	//0,                1,               2 ,         3,         4,         5,         6,          7
-	//   8            8+5=13               8+5+14=27               8+5+14+70=97       8+5+14+140=167
+	//(u8)address_hexakeys0,(u8)address_hexakeys0,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
+	//   10            10+5=15               10+5+14=29               10+5+14+70=99       10+5+14+140=169
 	uint8_t address_row=eeprom_read_byte((uint8_t *)0);
 	uint8_t address_col=eeprom_read_byte((uint8_t *)1);
 	uint16_t address_hexakeys0=eeprom_read_word((uint16_t *)2);
@@ -90,11 +94,11 @@ void ResetMatrixFormEEP(){
 	uint16_t address_keymask=eeprom_read_word((uint16_t *)6);
 	uint8_t j;
 	///////////////////////////////////
-	if(address_row==8){for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_row));}}
-	if(address_col==13){for( j=0;j<COLS;j++){colPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_col));}}
-	if(address_hexakeys0==27){ResetMatrix(0,address_hexakeys0);}
-	if(address_hexaKeys1==97){ResetMatrix(1,address_hexaKeys1);}
-	if(address_keymask==167){ResetMatrix(2,address_keymask);}
+	if(address_row==add1){for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_row));}}
+	if(address_col==add2){for( j=0;j<COLS;j++){colPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_col));}}
+	if(address_hexakeys0==add3){ResetMatrix(0,address_hexakeys0);}
+	if(address_hexaKeys1==add4){ResetMatrix(1,address_hexaKeys1);}
+	if(address_keymask==add5){ResetMatrix(2,address_keymask);}
 }
 void eepwrite(){
 	//	address,word1,word2,word3
