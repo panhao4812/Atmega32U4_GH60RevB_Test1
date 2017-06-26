@@ -62,7 +62,7 @@ void XDMode(){
 void ResetMatrix(uint8_t mask,uint16_t address){
 	uint8_t j=0;
 	for (r = 0; r < ROWS; r++) {
-		for (c = 0; c < ROWS; c++) {
+		for (c = 0; c < COLS; c++) {
 			switch (mask){
 				case 0:
 				hexaKeys0[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
@@ -87,11 +87,11 @@ void ResetMatrixFormEEP(){
 	//////////////////////////////////menu///////////////////////
 	//(u8)address_hexakeys0,(u8)address_hexakeys0,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
 	//   10            10+5=15               10+5+14=29               10+5+14+70=99       10+5+14+140=169
-	uint8_t address_row=eeprom_read_byte((uint8_t *)0);
-	uint8_t address_col=eeprom_read_byte((uint8_t *)1);
-	uint16_t address_hexakeys0=eeprom_read_word((uint16_t *)2);
-	uint16_t address_hexaKeys1=eeprom_read_word((uint16_t *)4);
-	uint16_t address_keymask=eeprom_read_word((uint16_t *)6);
+	uint16_t address_row=eeprom_read_word((uint16_t *)0);
+	uint16_t address_col=eeprom_read_word((uint16_t *)2);
+	uint16_t address_hexakeys0=eeprom_read_word((uint16_t *)4);
+	uint16_t address_hexaKeys1=eeprom_read_word((uint16_t *)6);
+	uint16_t address_keymask=eeprom_read_word((uint16_t *)8);
 	uint8_t j;
 	///////////////////////////////////
 	if(address_row==add1){for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_row));}}
