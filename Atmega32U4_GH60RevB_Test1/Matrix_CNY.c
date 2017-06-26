@@ -1,6 +1,6 @@
 
 #include "Functions.h"
-#ifdef revB
+#ifdef CNY
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
 //col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3

@@ -2,7 +2,7 @@
 #define FUNCTIONS_H_
 
 #define  xd60
-//#define revB
+//#define CNY
 #include "usb_keyboard.h"
 //////////////////////atmega32U4//////////////////////////
 #define LED_CONFIG	(DDRE |= (1<<6))

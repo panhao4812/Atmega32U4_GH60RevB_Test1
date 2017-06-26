@@ -3,11 +3,11 @@
 #ifdef xd60
 //lrow B6 F5 F6 F7 F4 B2
 //row D0 D1 D2 D3 D5
-//col F0, F1, E6, C7, C6, B6, D4, B1, B0, B5, B4, D7, D6, B3
+//col F0,F1,E6,C7,C6,B6,D4,B1,B7,B5,B4,D7,D6,B3
 uint8_t i,delayval;
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
-//                        1  2  3  4  5  6  7 8 9 10 11 12 13 14
+//                     1  2  3  4  5  6  7 8 9 10 11 12 13 14
 
 uint8_t hexaKeys0[ROWS][COLS] = {
 	{KEY_ESC,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_MINUS,KEY_EQUAL,KEY_BACKSPACE},
