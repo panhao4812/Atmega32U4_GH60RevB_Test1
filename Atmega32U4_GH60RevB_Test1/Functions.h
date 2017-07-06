@@ -1,9 +1,21 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
-
+#include "usb_keyboard.h"
+//////////////////////////////////////////////////////
 #define  xd60
 //#define CNY
-#include "usb_keyboard.h"
+
+#if defined(xd60)
+#define ROWS  5
+#define COLS  14
+#elif defined(CNY)
+#define ROWS  5
+#define COLS  14
+#else
+#define ROWS  5
+#define COLS  14
+#endif
+
 //////////////////////atmega32U4//////////////////////////
 #define LED_CONFIG	(DDRE |= (1<<6))
 #define LED_OFF		(PORTE &= ~(1<<6))
@@ -31,13 +43,14 @@ uint8_t digitalRead(uint8_t IO);
 void closeJtag();
 //////////////////////override//////////////////////////
 uint8_t FN;
-#define ROWS  5
-#define COLS  14
+
 extern  uint8_t hexaKeys0[ROWS][COLS] ;
 extern  uint8_t hexaKeys1[ROWS][COLS];
 extern  uint8_t keymask[ROWS][COLS];
 extern  uint8_t rowPins[ROWS];
 extern  uint8_t colPins[COLS];
+
+
 #define _delay_after 0x09
 #define _delay_before 0x03
 int init_main(void);

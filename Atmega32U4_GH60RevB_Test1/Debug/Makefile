@@ -39,7 +39,7 @@ SUBDIRS :=
 C_SRCS +=  \
 ../Functions.c \
 ../main.c \
-../Matrix_GH60REVB.c \
+../Matrix_CNY.c \
 ../Matrix_XD60.c \
 ../usb_keyboard.c \
 ../ws2812.c
@@ -54,7 +54,7 @@ ASM_SRCS +=
 OBJS +=  \
 Functions.o \
 main.o \
-Matrix_GH60REVB.o \
+Matrix_CNY.o \
 Matrix_XD60.o \
 usb_keyboard.o \
 ws2812.o
@@ -62,7 +62,7 @@ ws2812.o
 OBJS_AS_ARGS +=  \
 Functions.o \
 main.o \
-Matrix_GH60REVB.o \
+Matrix_CNY.o \
 Matrix_XD60.o \
 usb_keyboard.o \
 ws2812.o
@@ -70,7 +70,7 @@ ws2812.o
 C_DEPS +=  \
 Functions.d \
 main.d \
-Matrix_GH60REVB.d \
+Matrix_CNY.d \
 Matrix_XD60.d \
 usb_keyboard.d \
 ws2812.d
@@ -78,7 +78,7 @@ ws2812.d
 C_DEPS_AS_ARGS +=  \
 Functions.d \
 main.d \
-Matrix_GH60REVB.d \
+Matrix_CNY.d \
 Matrix_XD60.d \
 usb_keyboard.d \
 ws2812.d

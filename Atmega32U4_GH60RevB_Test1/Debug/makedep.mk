@@ -6,7 +6,7 @@ Functions.c
 
 main.c
 
-Matrix_GH60REVB.c
+Matrix_CNY.c
 
 Matrix_XD60.c
 

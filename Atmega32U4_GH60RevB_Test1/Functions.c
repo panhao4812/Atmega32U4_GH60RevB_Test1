@@ -79,10 +79,10 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 	}
 }
 #define add1 10
-#define add2 add1+5
-#define add3 add2+14
-#define add4 add3+70
-#define add5 add4+70
+#define add2 add1+ROWS
+#define add3 add2+COLS
+#define add4 add3+(ROWS*COLS)
+#define add5 add4+(ROWS*COLS)
 void ResetMatrixFormEEP(){
 	//////////////////////////////////menu///////////////////////
 	//(u8)address_hexakeys0,(u8)address_hexakeys0,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
