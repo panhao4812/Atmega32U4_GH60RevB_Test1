@@ -2,8 +2,8 @@
 #define FUNCTIONS_H_
 #include "usb_keyboard.h"
 //////////////////////////////////////////////////////
-#define  xd60
-//#define CNY
+//#define  xd60
+#define CNY
 
 #if defined(xd60)
 #define ROWS  5

@@ -51,9 +51,31 @@ uint8_t keymask[ROWS][COLS] = {
 };
 
 uint8_t r,c,i;
-
-void Open_LED(){}
-void Close_LED(){}
+//PB6 PF6 B2
+#define ledcount 3
+uint8_t ledPins[ledcount]={15,17,2};
+void init_LED(){
+	for ( i=0; i<ledcount; i++){
+		pinMode(ledPins[i],OUTPUT);
+		digitalWrite(ledPins[i],HIGH);
+	}
+}
+void Open_LED(){
+	for ( i=0; i<ledcount; i++){
+		digitalWrite(ledPins[i],HIGH);
+	}
+}
+void Close_LED(){
+	for ( i=0; i<ledcount; i++){
+		digitalWrite(ledPins[i],LOW);
+	}
+}
+void LED(){
+	for ( i=0; i<ledcount; i++){
+		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],HIGH);}
+		else{ digitalWrite(ledPins[i],LOW);}
+	}
+}
 
 int init_main(void) {
 CPU_PRESCALE(CPU_16MHz);//16M晶振分频设置
@@ -67,7 +89,7 @@ while (!usb_configured()){_delay_ms(300);}
 init_cols();
 init_rows();
 while (1) {//重启
-	//init_LED();
+	init_LED();
 	EnableRecv=1;
 	keyboard_buffer.enable_pressing=1;
 	ResetMatrixFormEEP();
@@ -81,7 +103,7 @@ while (1) {//重启
 		}
 		else if(keyboard_buffer.enable_pressing==1){
 			XDMode();
-			//LED();
+			LED();
 		}
 	}
 }
