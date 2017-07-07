@@ -96,6 +96,7 @@ while (1) {//÷ÿ∆Ù
 	_delay_ms(500);
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
 	while (1) {
 		eepwrite();
 		if(keyboard_buffer.enable_pressing==2){
