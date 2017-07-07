@@ -46,7 +46,7 @@ uint8_t RowLED[ROWS+1]={15,18,17,16,19,2};
 uint8_t ColLED[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
 void Open_LED(){}
 void Close_LED(){}
-
+void init_LED(){}
 uint8_t hexaKeys0[ROWS][COLS] = {
 	{KEY_ESC,       KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,        KEY_MINUS,     KEY_EQUAL,      KEY_BACKSPACE},
 	{KEY_TAB  ,     KEY_Q,KEY_W,KEY_E,KEY_R,KEY_T,KEY_Y,KEY_U,KEY_I,KEY_O,KEY_P,        KEY_LEFT_BRACE,KEY_RIGHT_BRACE,KEY_BACKSLASH},
@@ -71,54 +71,111 @@ uint8_t keymask[ROWS][COLS] = {
 };
 
 uint8_t r,c,i;
-
-void LED(){
+uint8_t stepLED=0;
+uint8_t delay_after=0;
+uint8_t delay_before=0;
+void PokerMode(){
+///////////////////////////////////////////////
+	init_cols();init_rows();init_ledrows();
+	FN=0xF0;
 	for (r = 0; r < ROWS; r++) {
-	digitalWrite(RowLED[r],HIGH);
+		pinMode(rowPins[r],OUTPUT);
+		digitalWrite(rowPins[r],LOW);
+		for (c = 0; c < COLS; c++) {
+			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;}
+			else {keymask[r][c]|= 0x88;delay_after=_delay_after;}
+			if(keymask[r][c]==0xEE )FN=0x0F;
+		}
+		init_rows();
+	}
+//////////////////////////////////////////////	
+	init_ledcols();init_rows();init_ledrows();
+    digitalWrite(RowLED[stepLED],HIGH);
 		for (c = 0; c < COLS; c++) {
 			if(keymask[r][c]&0x88){
-			digitalWrite(ColLED[c],HIGH);
-			}else{
-			digitalWrite(ColLED[c],LOW);
+				digitalWrite(ColLED[c],HIGH);
+				}else{
+				digitalWrite(ColLED[c],LOW);
 			}
 		}
-	digitalWrite(RowLED[r],LOW);
-	}
-}
-
-int init_main(void) {
-CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√
-closeJtag();
-usb_init();
-while (!usb_configured()){_delay_ms(300);}
-//  TCCR0A = 0x00;
-//	TCCR0B =(1<<CS00);
-//	TIMSK0 = (1<<TOIE0);
-////////////////////////////////////////////////
-init_cols();
-init_rows();
-init_ledrows();
-while (1) {//÷ÿ∆Ù	
-	EnableRecv=1;
-	keyboard_buffer.enable_pressing=1;
-	ResetMatrixFormEEP();
-	_delay_ms(500);
+	stepLED++;
+	if(stepLED>=ROWS)stepLED=0;
+//////////////////////////////////////////////
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();
-	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
-	while (1) {
-		eepwrite();
-		if(keyboard_buffer.enable_pressing==2){
-			break;
-		}
-		else if(keyboard_buffer.enable_pressing==1){
-		    init_cols();init_rows();init_ledrows();
-			XDMode();
-			init_ledcols();init_rows();init_ledrows();
-			LED();
+	for (r = 0; r < ROWS; r++) {
+		for (c = 0; c < COLS; c++) {
+			switch(keymask[r][c]&FN){
+				case 0x90:
+				presskey(hexaKeys0[r][c]);
+				break;
+				case 0xA0:
+				pressModifierKeys(hexaKeys0[r][c]);
+				break;
+				case 0xB0:
+				pressmousekey(hexaKeys0[r][c]);
+				break;
+				case 0xC0:
+				presssystemkey(hexaKeys0[r][c]);
+				break;
+				case 0xD0:
+				pressconsumerkey(hexaKeys0[r][c]);
+				break;
+				case 0x09:
+				presskey(hexaKeys1[r][c]);
+				break;
+				case 0x0A:
+				pressModifierKeys(hexaKeys1[r][c]);
+				break;
+				case 0x0B:
+				pressmousekey(hexaKeys1[r][c]);
+				break;
+				case 0x0C:
+				presssystemkey(hexaKeys1[r][c]);
+				break;
+				case 0x0D:
+				pressconsumerkey(hexaKeys1[r][c]);
+				break;
+			}
 		}
 	}
+	if(usb_keyboard_send_required())delay_before=_delay_before;
+	if(usb_mouse_send_required())delay_before=_delay_before;
+	if(delay_after==_delay_after && delay_before==1){usb_keyboard_send();usb_mouse_send();}
+	if(delay_after==1){usb_keyboard_send();usb_mouse_send();}
+	if(delay_after>0)delay_after-=1;
+	if(delay_before>0)delay_before-=1;
 }
+int init_main(void) {
+	CPU_PRESCALE(CPU_16MHz);//16Mæß’Ò∑÷∆µ…Ë÷√
+	closeJtag();
+	usb_init();
+	while (!usb_configured()){_delay_ms(300);}
+	//  TCCR0A = 0x00;
+	//	TCCR0B =(1<<CS00);
+	//	TIMSK0 = (1<<TOIE0);
+	////////////////////////////////////////////////
+	init_cols();
+	init_rows();
+	init_ledrows();
+	while (1) {//÷ÿ∆Ù
+		EnableRecv=1;
+		keyboard_buffer.enable_pressing=1;
+		ResetMatrixFormEEP();
+		_delay_ms(500);
+		releaseAllkeyboardkeys();
+		releaseAllmousekeys();
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+		while (1) {
+			eepwrite();
+			if(keyboard_buffer.enable_pressing==2){
+				break;
+			}
+			else if(keyboard_buffer.enable_pressing==1){
+				PokerMode();
+			}
+		}
+	}
 	return 0;
 }
 #endif

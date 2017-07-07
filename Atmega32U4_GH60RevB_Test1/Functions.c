@@ -1,68 +1,8 @@
 #include "Functions.h"
-uint8_t r,c;
-uint8_t delay_after=0;
-uint8_t delay_before=0;
-void XDMode(){
-	FN=0xF0;
-	for (r = 0; r < ROWS; r++) {
-		pinMode(rowPins[r],OUTPUT);
-		digitalWrite(rowPins[r],LOW);
-		for (c = 0; c < COLS; c++) {
-			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;}
-			else {keymask[r][c]|= 0x88;delay_after=_delay_after;}
-			if(keymask[r][c]==0xEE )FN=0x0F;
-		}
-		init_rows();
-	}
-	releaseAllkeyboardkeys();
-	releaseAllmousekeys();
-	for (r = 0; r < ROWS; r++) {
-		for (c = 0; c < COLS; c++) {
-			switch(keymask[r][c]&FN){
-				case 0x90:
-				presskey(hexaKeys0[r][c]);
-				break;
-				case 0xA0:
-				pressModifierKeys(hexaKeys0[r][c]);
-				break;
-				case 0xB0:
-				pressmousekey(hexaKeys0[r][c]);
-				break;
-				case 0xC0:
-				presssystemkey(hexaKeys0[r][c]);
-				break;
-				case 0xD0:
-				pressconsumerkey(hexaKeys0[r][c]);
-				break;
-				case 0x09:
-				presskey(hexaKeys1[r][c]);
-				break;
-				case 0x0A:
-				pressModifierKeys(hexaKeys1[r][c]);
-				break;
-				case 0x0B:
-				pressmousekey(hexaKeys1[r][c]);
-				break;
-				case 0x0C:
-				presssystemkey(hexaKeys1[r][c]);
-				break;
-				case 0x0D:
-				pressconsumerkey(hexaKeys1[r][c]);
-				break;
-			}
-		}
-	}
-	if(usb_keyboard_send_required())delay_before=_delay_before;
-	if(usb_mouse_send_required())delay_before=_delay_before;
-	if(delay_after==_delay_after && delay_before==1){usb_keyboard_send();usb_mouse_send();}
-	if(delay_after==1){usb_keyboard_send();usb_mouse_send();}
-	if(delay_after>0)delay_after-=1;
-	if(delay_before>0)delay_before-=1;
-}
 void ResetMatrix(uint8_t mask,uint16_t address){
 	uint8_t j=0;
-	for (r = 0; r < ROWS; r++) {
-		for (c = 0; c < COLS; c++) {
+	for (int r = 0; r < ROWS; r++) {
+		for (int c = 0; c < COLS; c++) {
 			switch (mask){
 				case 0:
 				hexaKeys0[r][c]=eeprom_read_byte((uint8_t *)((uint16_t)j+address));
