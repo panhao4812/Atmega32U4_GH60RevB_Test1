@@ -1,7 +1,7 @@
 
 #include "Functions.h"
 #ifdef CNY
-//lrow B6 F5 F6 F7 F4 B2
+//lrow B6 F5 F6 F7 B2 F4 
 //row D0 D1 D2 D3 D5
 //col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3
 
@@ -42,7 +42,7 @@ void init_ledcols(){
 
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
-uint8_t RowLED[ROWS+1]={15,18,17,16,19,2};
+uint8_t RowLED[ROWS+1]={15,18,17,16,2,19};
 uint8_t ColLED[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
 void Open_LED(){}
 void Close_LED(){}
@@ -69,35 +69,43 @@ uint8_t keymask[ROWS][COLS] = {
 	{0x22,0x00,0x11,0x11,0x11,0x11,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x22},
 	{0x22,0x22,0x22,0x00,0x00,0x11,0x00,0x00,0x00,0x00,0x22,0x22,0x66,0x22}
 };
-
+uint8_t keymaskled[ROWS][COLS] = {
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
+};
 uint8_t r,c,i;
 uint8_t stepLED=0;
 uint8_t delay_after=0;
 uint8_t delay_before=0;
 void PokerMode(){
 ///////////////////////////////////////////////
-	init_cols();init_rows();init_ledrows();
+	init_ledrows();init_rows();init_cols();
 	FN=0xF0;
 	for (r = 0; r < ROWS; r++) {
 		pinMode(rowPins[r],OUTPUT);
 		digitalWrite(rowPins[r],LOW);
 		for (c = 0; c < COLS; c++) {
 			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;}
-			else {keymask[r][c]|= 0x88;delay_after=_delay_after;}
+			else {keymask[r][c]|= 0x88;delay_after=_delay_after;keymaskled[r][c]=0x6C;}
 			if(keymask[r][c]==0xEE )FN=0x0F;
 		}
 		init_rows();
 	}
 //////////////////////////////////////////////	
-	init_ledcols();init_rows();init_ledrows();
+	init_ledcols();
     digitalWrite(RowLED[stepLED],HIGH);
-		for (c = 0; c < COLS; c++) {
-			if(keymask[r][c]&0x88){
-				digitalWrite(ColLED[c],HIGH);
-				}else{
-				digitalWrite(ColLED[c],LOW);
-			}
+		for (c = 0; c < COLS; c++) {	
+			if(keymaskled[stepLED][c]){digitalWrite(ColLED[c],HIGH);}else{digitalWrite(ColLED[c],LOW);}
+			if(keymaskled[stepLED][c])keymaskled[stepLED][c]--;
 		}
+		if((keyboard_buffer.keyboard_leds&(1<<0))==(1<<0) && stepLED==0 )
+		{ digitalWrite(ColLED[13],HIGH);}
+		if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
+		{ digitalWrite(ColLED[0],HIGH);}
+
 	stepLED++;
 	if(stepLED>=ROWS)stepLED=0;
 //////////////////////////////////////////////
