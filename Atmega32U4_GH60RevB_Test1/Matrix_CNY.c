@@ -9,8 +9,7 @@ void init_ledrows(void) {
 	DDRB |= (1 << 2 | 1 << 6);
 	PORTB&=~(1 << 2 | 1 << 6);
 	DDRF |= (1 << 4 | 1 << 5 | 1 << 6 | 1 << 7);
-	PORTF&=~(1 << 5 | 1 << 6 | 1 << 7);
-	PORTF|= (1 << 4);
+	PORTF&=~( 1 << 5 | 1 << 6 | 1 << 7);
 }
 void init_rows(void) {
 	DDRD&=~(1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 5);
@@ -106,6 +105,8 @@ void PokerMode(){
 		{ digitalWrite(ColLED[13],HIGH);}
 		if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
 		{ digitalWrite(ColLED[0],HIGH);}
+		if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
+		{PORTF|= (1 << 4);}else{PORTF&=~(1 << 4);}		
 	stepLED++;
 	if(stepLED>=ROWS)stepLED=0;
 //////////////////////////////////////////////
