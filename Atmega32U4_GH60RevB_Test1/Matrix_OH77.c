@@ -1,8 +1,7 @@
 #include "Functions.h"
 #include "ws2812.h"
-#ifdef xd60
-//row D0 D1 D2 D3 D5
-//col F0,F1,E6,C7,C6,B6,D4,B1,B7,B5,B4,D7,D6,B3
+#ifdef oh77
+
 uint8_t i,delayval;
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
@@ -48,8 +47,6 @@ void init_rows(){
 /////////////////////////////////////////////////////////////////////
 #define ledcount 2
 uint8_t ledPins[ledcount]={18,2};
-uint8_t cindex[WS2812_COUNT]={0,34,68,102,136,170};
-uint8_t flip[WS2812_COUNT]={0,0,0,0,0,0};
 void Open_LED(){
 	for ( i=0; i<ledcount; i++){
 		digitalWrite(ledPins[i],LOW);
@@ -75,32 +72,41 @@ void init_LED(){
 	WS2812Clear();
 	WS2812Send();
 }
+uint8_t red,green,blue;
+uint8_t redm,greenm,bluem;
 void LED(){
 	for ( i=0; i<ledcount; i++){
 		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
 		else{ digitalWrite(ledPins[i],HIGH);}
 	}
 	if(delayval>=Maxdelay){
+		if(redm)red-=5;else red+=5;
+		if(greenm)green-=3;else green+=3;
+		if(bluem)blue-=4;else blue+=4;
 		if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2)){
-			for(uint8_t i=0;i<WS2812_COUNT;i++){
-				uint8_t r=pgm_read_byte(Rcolors+cindex[i]);
-				uint8_t g=pgm_read_byte(Gcolors+cindex[i]);
-				uint8_t b=pgm_read_byte(Bcolors+cindex[i]);
-				WS2812SetRGB(i,r,g,b);
-				if(cindex[i]==0)flip[i]=1;
-				if(cindex[i]==0xFE)flip[i]=0;				
-				if(flip[i]){cindex[i]++;}else {cindex[i]--;}						
+			for(char i = 0; i<WS2812_COUNT; i++)
+			{
+				WS2812SetRGB(i, red, green, blue);
 			}
 			}else{
-		WS2812Clear();
-				}
-		delayval--;
+			WS2812Clear();
+		}
 		WS2812Send();
-		}else{
-		if(delayval){delayval--;}
+		delayval--;
+		if(red>=255){red=255;redm=1;}
+		if(green>=255){green=255;greenm=1;}
+		if(blue>=255){blue=255;bluem=1;}
+		if(red<=5){red=0;redm=5;}
+		if(green<=5){green=0;greenm=5;}
+		if(blue<=5){blue=0;bluem=5;}
+	}
+	else{
+		if(delayval>0 ){delayval--;}
 		else {delayval=Maxdelay;}
 	}
 }
+
+
 /////////////////////////////////////////////////////////////////////
 uint8_t r,c;
 uint8_t delay_after=0;
@@ -196,9 +202,3 @@ int init_main(void) {
 	return 0;
 }
 #endif
-/*
-ISR(TIMER0_OVF_vect)
-{
-
-}
-*/

@@ -2,8 +2,9 @@
 #define FUNCTIONS_H_
 #include "usb_keyboard.h"
 //////////////////////////////////////////////////////
-//#define  xd60
-#define CNY
+#define  xd60
+//#define CNY
+//#define oh77
 
 #if defined(xd60)
 #define ROWS  5
@@ -11,6 +12,9 @@
 #elif defined(CNY)
 #define ROWS  5
 #define COLS  14
+#elif defined(oh77)
+#define ROWS  7
+#define COLS  11
 #else
 #define ROWS  5
 #define COLS  14

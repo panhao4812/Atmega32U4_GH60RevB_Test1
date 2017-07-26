@@ -3,7 +3,7 @@
 
 #include <avr/io.h>
 #include <stdlib.h>
-
+#include "avr/pgmspace.h"
 
 #define WS2812_COUNT	6
 #define WS2812_PORT		PORTF
@@ -24,4 +24,7 @@ void WS2812SetRGB(uint16_t led, uint8_t red, uint8_t green, uint8_t blue);
 void WS2812SetHSV(uint16_t led, uint16_t hue, uint16_t saturation, uint16_t value);
 void WS2812Send(void);
 
+extern const  uint8_t Rcolors[] PROGMEM;
+extern const  uint8_t Gcolors[] PROGMEM;
+extern const  uint8_t Bcolors[] PROGMEM;
 #endif
