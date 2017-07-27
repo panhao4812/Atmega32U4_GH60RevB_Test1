@@ -13,8 +13,8 @@
 #define ROWS  5
 #define COLS  14
 #elif defined(oh77)
-#define ROWS  7
-#define COLS  11
+#define ROWS  11
+#define COLS  7
 #else
 #define ROWS  5
 #define COLS  14

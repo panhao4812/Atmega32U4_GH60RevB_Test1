@@ -48,8 +48,7 @@ void init_rows(){
 /////////////////////////////////////////////////////////////////////
 #define ledcount 2
 uint8_t ledPins[ledcount]={18,2};
-uint8_t cindex[WS2812_COUNT]={0,34,68,102,136,170};
-uint8_t flip[WS2812_COUNT]={0,0,0,0,0,0};
+uint16_t cindex[WS2812_COUNT]={0,34,68,102,136,170};
 void Open_LED(){
 	for ( i=0; i<ledcount; i++){
 		digitalWrite(ledPins[i],LOW);
@@ -86,10 +85,9 @@ void LED(){
 				uint8_t r=pgm_read_byte(Rcolors+cindex[i]);
 				uint8_t g=pgm_read_byte(Gcolors+cindex[i]);
 				uint8_t b=pgm_read_byte(Bcolors+cindex[i]);
-				WS2812SetRGB(i,r,g,b);
-				if(cindex[i]==0)flip[i]=1;
-				if(cindex[i]==0xFE)flip[i]=0;				
-				if(flip[i]){cindex[i]++;}else {cindex[i]--;}						
+				WS2812SetRGB(i,r,g,b);		
+				cindex[i]++;	
+				if(cindex[i]>=WS2812ColorCount) cindex[i]=0;					
 			}
 			}else{
 		WS2812Clear();
