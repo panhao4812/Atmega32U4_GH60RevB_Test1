@@ -451,7 +451,7 @@ static inline uint8_t FrameNumber()
 ((s) == 32 ? 0x20 :	\
 ((s) == 16 ? 0x10 :	\
 0x00)))
-
+//size只能为8 16 32 64 128 256 512
 
 
 #define LSB(n) (n & 255)
@@ -463,6 +463,7 @@ static inline uint8_t FrameNumber()
 #else
 #   define MAX_ENDPOINT     7
 #   define UERST_MASK       0x7E
+//0b 01111110 UERST是代表ep是否重置，0-6位分别表示ep0-6 第7位锁死为0 1代表重置，0代表不重置
 #endif
 
 #if defined(__AVR_AT90USB162__)

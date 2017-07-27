@@ -414,6 +414,17 @@ static const uint8_t PROGMEM endpoint_config_table[] = {
 	0,
 	0
 };
+//{UECONX,UECFG0X,UECFG1X}
+//UECONX寄存器相关 -，-，stallRQ，stallRQC，RSTDT，-，-，EPen
+//EPen代表是否启用ep
+//UECFG0X寄存器相关 EPtype,EPtype,-,-,-,-,-,EPdir
+//EPtype 00 control 10 bulk 01 isochronous 11 interrupt
+//EPdir代表in 还是 out
+//UECFG1X寄存器相关 -,EPsize,EPsize,EPsize,EPbk,EPbk,alloc,-
+//EPsize=0 size=8 | EPsize=1 size=16 | EPsize=2 size=32 | EPsize=3 size=64
+//0 one bank 1 double bank 
+//0 Clear Endpoint 1 allocate endpoint 
+
 ISR(USB_COM_vect)
 {
 	uint8_t bmRequestType;
@@ -480,14 +491,14 @@ ISR(USB_COM_vect)
 			for (i=1; i<MAX_ENDPOINT; i++) {
 				SetEP(i);
 				en = pgm_read_byte(cfg++);
-				UECONX = en;
+				UECONX = en;	
 				if (en) {
 					UECFG0X = pgm_read_byte(cfg++);
 					UECFG1X = pgm_read_byte(cfg++);
 				}
 			}
-			UERST = UERST_MASK;
-			UERST = 0;
+			UERST = UERST_MASK;//ep全部重置
+			UERST = 0;         //ep全部启用
 			return;
 		}
 		if (bRequest == GET_CONFIGURATION && bmRequestType == 0x80) {
@@ -523,8 +534,8 @@ ISR(USB_COM_vect)
 					Stall();
 					} else {
 					UECONX = (1<<STALLRQC)|(1<<RSTDT)|(1<<EPEN);
-					UERST = (1 << i);
-					UERST = 0;
+					UERST = (1 << i); //UERST表示ep重置 第N位为1就表示epN重置
+					UERST = 0;				
 				}
 				return;
 			}
