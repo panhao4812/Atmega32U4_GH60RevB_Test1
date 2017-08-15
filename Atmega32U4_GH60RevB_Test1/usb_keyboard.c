@@ -449,18 +449,17 @@ ISR(USB_COM_vect)
 		ClearSetupInt();
 		//////////////////////////////////////////////////
 		if (bRequest == GET_DESCRIPTOR) {
-			if((wValue==0x0100)&&(wIndex==0x0000)){            desc_addr=device_descriptor; len= sizeof(device_descriptor);}
+			     if((wValue==0x0100)&&(wIndex==0x0000)){            desc_addr=device_descriptor; len= sizeof(device_descriptor);}
 			else if((wValue==0x0200)&&(wIndex==0x0000)){            desc_addr=config1_descriptor;len= sizeof(config1_descriptor);}
 			else if((wValue==0x2200)&&(wIndex==KEYBOARD_INTERFACE)){desc_addr=KeyboardReport;    len= sizeof(KeyboardReport);}
 			else if((wValue==0x2100)&&(wIndex==KEYBOARD_INTERFACE)){desc_addr=config1_descriptor+KEYBOARD_HID_DESC_OFFSET; len=9;}
 			else if((wValue==0x2200)&&(wIndex==RAW_INTERFACE)){     desc_addr=RawReport;         len= sizeof(RawReport);}
 			else if((wValue==0x2100)&&(wIndex==RAW_INTERFACE)){     desc_addr=config1_descriptor+RAW_HID_DESC_OFFSET; len=9;}
 			else if((wValue==0x2200)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=MouseReport;       len= sizeof(MouseReport);}
-			else if((wValue==0x2100)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=config1_descriptor+MOUSE_HID_DESC_OFFSET; len=9;}
-			
-			else if((wValue==0x0300)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string0; len= 4;}
-			else if((wValue==0x0301)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string1; len= 0x0C ;} //sizeof(STR_MANUFACTURER)
-			else if((wValue==0x0302)&&(wIndex==0x0409)){            desc_addr=(const uint8_t *)&string2; len= 0x1C;}//sizeof(STR_PRODUCT)
+			else if((wValue==0x2100)&&(wIndex==MOUSE_INTERFACE)){   desc_addr=config1_descriptor+MOUSE_HID_DESC_OFFSET; len=9;}			
+			else if(wValue==0x0300){desc_addr=(const uint8_t *)&string0; len= 4;}
+			else if(wValue==0x0301){desc_addr=(const uint8_t *)&string1; len= 0x0C ;} //sizeof(STR_MANUFACTURER)
+			else if(wValue==0x0302){desc_addr=(const uint8_t *)&string2; len= 0x1C;}//sizeof(STR_PRODUCT)
 			else {Stall();return;}
 			/////////////////////////////////////////////////////////
 			if(wLength>0xff)wLength=0xff;

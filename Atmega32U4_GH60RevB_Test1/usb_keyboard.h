@@ -11,7 +11,7 @@
 
 #define VENDOR_ID		0xCCCC//0x16C0
 #define PRODUCT_ID		0x3415//0x047C
-#define SUPPORT_ENDPOINT_HALT
+#define SUPPORT_ENDPOINT_HALT // «∑Ò¡¢º¥÷–∂œep
 
 #define ENDPOINT0_SIZE		8
 
