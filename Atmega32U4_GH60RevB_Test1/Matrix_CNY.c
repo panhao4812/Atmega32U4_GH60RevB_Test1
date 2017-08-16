@@ -80,6 +80,22 @@ uint8_t r,c,i;
 uint8_t stepLED=0;
 uint8_t delay_after=0;
 uint8_t delay_before=0;
+void LED(){
+init_ledcols();
+digitalWrite(RowLED[stepLED],HIGH);
+for (c = 0; c < COLS; c++) {
+	if(keymaskled[stepLED][c]){digitalWrite(ColLED[c],HIGH);}else{digitalWrite(ColLED[c],LOW);}
+	if(keymaskled[stepLED][c])keymaskled[stepLED][c]--;
+}
+if((keyboard_buffer.keyboard_leds&(1<<0))==(1<<0) && stepLED==0 )
+{ digitalWrite(ColLED[13],HIGH);}
+if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
+{ digitalWrite(ColLED[0],HIGH);}
+if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
+{PORTF|= (1 << 4);}else{PORTF&=~(1 << 4);}
+stepLED++;
+if(stepLED>=ROWS)stepLED=0;
+}
 void PokerMode(){
 ///////////////////////////////////////////////
 	init_ledrows();init_rows();init_cols();
@@ -95,20 +111,7 @@ void PokerMode(){
 		init_rows();
 	}
 //////////////////////////////////////////////	
-	init_ledcols();
-    digitalWrite(RowLED[stepLED],HIGH);
-		for (c = 0; c < COLS; c++) {	
-			if(keymaskled[stepLED][c]){digitalWrite(ColLED[c],HIGH);}else{digitalWrite(ColLED[c],LOW);}
-			if(keymaskled[stepLED][c])keymaskled[stepLED][c]--;
-		}
-		if((keyboard_buffer.keyboard_leds&(1<<0))==(1<<0) && stepLED==0 )
-		{ digitalWrite(ColLED[13],HIGH);}
-		if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
-		{ digitalWrite(ColLED[0],HIGH);}
-		if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
-		{PORTF|= (1 << 4);}else{PORTF&=~(1 << 4);}		
-	stepLED++;
-	if(stepLED>=ROWS)stepLED=0;
+	LED();
 //////////////////////////////////////////////
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();

@@ -2,9 +2,9 @@
 #define FUNCTIONS_H_
 #include "usb_keyboard.h"
 //////////////////////////////////////////////////////
-#define  xd60
+//#define  xd60
 //#define CNY
-//#define oh77
+#define oh77
 
 #if defined(xd60)
 #define ROWS  5
@@ -60,12 +60,16 @@ extern  uint8_t colPins[COLS];
 int init_main(void);
 void init_cols();
 void init_rows();
-void init_LED();
+
 void pokerMode();
 void XDMode();
+void eepwrite();
 void ResetMatrixFormEEP();
+
+void init_LED();
 void Open_LED();
 void Close_LED();
-void eepwrite();
+void LED();
+
 ////////////////////////////////////////////////////////
 #endif /* */

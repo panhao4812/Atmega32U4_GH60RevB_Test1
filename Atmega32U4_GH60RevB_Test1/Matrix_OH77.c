@@ -87,8 +87,6 @@ void init_LED(){
 	WS2812Clear();
 	WS2812Send();
 }
-uint8_t red,green,blue;
-uint8_t redm,greenm,bluem;
 void LED(){
 	for ( i=0; i<ledcount; i++){
 		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
