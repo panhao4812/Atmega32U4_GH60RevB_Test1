@@ -171,7 +171,6 @@ int init_main(void) {
 	init_rows();
 	init_ledrows();
 	while (1) {//÷ÿ∆Ù
-		EnableRecv=1;
 		keyboard_buffer.enable_pressing=1;
 		ResetMatrixFormEEP();
 		_delay_ms(500);

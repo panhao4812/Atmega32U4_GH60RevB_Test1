@@ -8,6 +8,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <avr/eeprom.h>
+#include "EndPoint.h"
 
 #define VENDOR_ID		0xCCCC//0x16C0
 #define PRODUCT_ID		0x3415//0x047C
@@ -118,7 +119,7 @@ typedef struct {
 
 report_mouse_t mouse_report;
 buffer_mouse_t mouse_buffer;
-#define maxEEP (uint16_t)0x03FF // (1k eeprom)
+#define maxEEP (uint16_t)0x03FF // (2k eeprom)
 report_raw_t raw_report_in;
 report_raw_t raw_report_out;
 report_keyboard_t keyboard_report;
@@ -289,141 +290,7 @@ buffer_keyboard_t keyboard_buffer;
 #define AC_MINIMIZE             0x0206
 //*/
 
-// Everything below this point is only intended for usb_serial.c
-// Misc functions to wait for ready and send/receive packets
-/*
-uint8_t USB_INT_HasOccurred(const uint8_t Interrupt){
-switch (Interrupt)
-{
-case USB_INT_WAKEUPI:
-return (UDINT  & (1 << WAKEUPI));
-case USB_INT_SUSPI:
-return (UDINT  & (1 << SUSPI));
-case USB_INT_EORSTI:
-return (UDINT  & (1 << EORSTI));
-case USB_INT_SOFI:
-return (UDINT  & (1 << SOFI));
-case USB_INT_RXSTPI:
-return (UEINTX & (1 << RXSTPI));
-default:
-return 0;
-}
-}
-uint8_t USB_INT_IsEnabled(const uint8_t Interrupt)
-{
-switch (Interrupt)
-{
-case USB_INT_WAKEUPI:
-return (UDIEN  & (1 << WAKEUPE));
-case USB_INT_SUSPI:
-return (UDIEN  & (1 << SUSPE));
-case USB_INT_EORSTI:
-return (UDIEN  & (1 << EORSTE));
-case USB_INT_SOFI:
-return (UDIEN  & (1 << SOFE));
-case USB_INT_RXSTPI:
-return (UEIENX & (1 << RXSTPE));
-default:
-return 0;
-}
-}
-void USB_INT_Clear(const uint8_t Interrupt){
-switch (Interrupt)
-{
-case USB_INT_WAKEUPI:
-UDINT  &= ~(1 << WAKEUPI);
-break;
-case USB_INT_SUSPI:
-UDINT  &= ~(1 << SUSPI);
-break;
-case USB_INT_EORSTI:
-UDINT  &= ~(1 << EORSTI);
-break;
-case USB_INT_SOFI:
-UDINT  &= ~(1 << SOFI);
-break;
-case USB_INT_RXSTPI:
-UEINTX &= ~(1 << RXSTPI);
-break;
-default:
-return false;
-}
-}
-*/
-static inline void WaitIN(void)
-{
-	while (!(UEINTX & (1<<TXINI)));
-}
-static inline void ClearIN(void)
-{
-	UEINTX = ~(1<<TXINI);
-}
-static inline void WaitOUT(void)
-{
-	while (!(UEINTX & (1<<RXOUTI)));
-}
-static inline uint8_t WaitForINOrOUT()
-{
-	while (!(UEINTX & ((1<<TXINI)|(1<<RXOUTI))));
-	return (UEINTX & (1<<RXOUTI)) == 0;
-}
-static inline void ClearOUT(void)
-{
-	UEINTX = ~(1<<RXOUTI);
-}
 
-static inline uint8_t Recv8()
-{
-	return UEDATX;
-}
-static inline void Send8(uint8_t d)
-{
-	UEDATX = d;
-}
-static inline void SetEP(uint8_t ep)
-{
-	UENUM = ep;
-}
-static inline uint8_t FifoByteCount()
-{
-	return UEBCLX;
-}
-static inline uint8_t ReceivedSetupInt()
-{
-	return UEINTX & (1<<RXSTPI);
-}
-static inline void ClearSetupInt()
-{
-	UEINTX = ~((1<<RXSTPI) | (1<<RXOUTI) | (1<<TXINI));
-}
-static inline void Stall()
-{
-	UECONX = (1<<STALLRQ) | (1<<EPEN);
-}
-static inline uint8_t ReadWriteAllowed()
-{
-	return UEINTX & (1<<RWAL);
-}
-static inline uint8_t Stalled()
-{
-	return UEINTX & (1<<STALLEDI);
-}
-static inline uint8_t FifoFree()
-{
-	return UEINTX & (1<<FIFOCON);
-}
-static inline void ReleaseRX()
-{
-	UEINTX = 0x6B;	// FIFOCON=0 NAKINI=1 RWAL=1 NAKOUTI=0 RXSTPI=1 RXOUTI=0 STALLEDI=1 TXINI=1
-}
-static inline void ReleaseTX()
-{
-	UEINTX = 0x3A;	// FIFOCON=0 NAKINI=0 RWAL=1 NAKOUTI=1 RXSTPI=1 RXOUTI=0 STALLEDI=1 TXINI=0
-}
-static inline uint8_t FrameNumber()
-{
-	return UDFNUML;
-}
 ////////////////////////////////////////
 #define USB_INT_WAKEUPI  2
 #define USB_INT_SUSPI    3

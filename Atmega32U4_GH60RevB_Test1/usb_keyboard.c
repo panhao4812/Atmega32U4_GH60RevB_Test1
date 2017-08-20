@@ -290,6 +290,7 @@ void usb_init(void)
 	ClearKeyboard();
 	ClearMouse();
 	ClearRaw();
+	EnableRecv=1;
 }
 // return 0 if the USB is not configured, or the configuration
 // number selected by the HOST
@@ -359,12 +360,8 @@ uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint
 //	General interrupt
 void EVENT_USB_Device_StartOfFrame()
 {
-	static uint8_t count;
-	if (++count % 50) return;
-	count = 0;
-	if (ReadWriteAllowed()&& EnableRecv){
-		if(keyboard_buffer.enable_pressing==0)	{EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,RAW_EPSIZE ,0);}
-		else { EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,2, 0);}
+	if (ReadWriteAllowed()&&IsOUTReceived()){
+		if(keyboard_buffer.enable_pressing==0)	{EnableRecv=usb_recv(RAW_ENDPOINT_OUT,(uint8_t *)&raw_report_out,RAW_EPSIZE ,0);}		
 	}
 }
 ISR(USB_GEN_vect)
@@ -513,7 +510,7 @@ ISR(USB_COM_vect)
 			#ifdef SUPPORT_ENDPOINT_HALT
 			if (bmRequestType == 0x82) {
 				SetEP(wIndex);
-				if (UECONX & (1<<STALLRQ)) i = 1;
+				if (Endpoint_IsStalled()) i = 1;
 				SetEP(0);
 			}
 			#endif
