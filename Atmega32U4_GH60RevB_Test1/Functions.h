@@ -3,8 +3,8 @@
 #include "usb_keyboard.h"
 //////////////////////////////////////////////////////
 //#define  xd60
-#define CNY
-//#define oh77
+//#define CNY
+#define oh77
 
 #if defined(xd60)
 #define ROWS  5

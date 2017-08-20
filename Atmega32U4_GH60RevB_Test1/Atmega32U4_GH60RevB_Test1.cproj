@@ -120,9 +120,6 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="EndPoint.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Functions.c">
       <SubType>compile</SubType>
     </Compile>
