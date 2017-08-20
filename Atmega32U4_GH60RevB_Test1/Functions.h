@@ -3,8 +3,8 @@
 #include "usb_keyboard.h"
 //////////////////////////////////////////////////////
 //#define  xd60
-//#define CNY
-#define oh77
+#define CNY
+//#define oh77
 
 #if defined(xd60)
 #define ROWS  5
@@ -20,11 +20,13 @@
 #define COLS  14
 #endif
 
-//////////////////////atmega32U4//////////////////////////
+//////////////////////breakoutboard//////////////////////////
+#if defined(BreakoutBoard)
 #define LED_CONFIG	(DDRE |= (1<<6))
 #define LED_OFF		(PORTE &= ~(1<<6))
 #define LED_ON	(PORTE |= (1<<6))
-
+#endif
+//////////////////////////////////////////////////////
 #define CPU_PRESCALE(n) (CLKPR = 0x80, CLKPR = (n))
 #define CPU_16MHz       0x00
 #define CPU_8MHz        0x01
