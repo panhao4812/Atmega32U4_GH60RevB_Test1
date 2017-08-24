@@ -23,8 +23,7 @@ uint8_t hexaKeys1[ROWS][COLS] = {
 	{KEY_LEFT_CTRL,KEY_FN,KEY_LEFT_ALT,0x00,0x00,KEY_SPACE,0x00,0x00,KEY_LEFT,0x00,KEY_FN,KEY_RIGHT_CTRL,KEY_DOWN,KEY_RIGHT}
 };
 //keymask_bits:7-press 654-hexatype0 3-press 210-hexatype1
-//type: 1-key 2-modifykey 3-mousekey 4-systemkey 5-consumerkey 6-FN 7-consumerkeyAL,8-consumerkeyAC
-
+//type: 1-key 2-modifykey 3-mousekey 4-systemkey 5-consumerkey 6-FN 7-Switch,8-macro
 uint8_t keymask[ROWS][COLS] = {
 	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
 	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
@@ -32,7 +31,6 @@ uint8_t keymask[ROWS][COLS] = {
 	{0x22,0x00,0x11,0x11,0x11,0x11,0x10,0x10,0x10,0x15,0x15,0x00,0x10,0x11},
 	{0x22,0x66,0x22,0x00,0x00,0x11,0x00,0x10,0x11,0x00,0x66,0x22,0x11,0x11}
 };
-
 void init_cols(){
 	for ( i=0; i<COLS; i++){
 		pinMode(colPins[i],INPUT);
@@ -135,6 +133,12 @@ void XDMode(){
 				case 0xD0:
 				pressconsumerkey(hexaKeys0[r][c]);
 				break;
+				case 0xE0:
+				pressswitchkey(hexaKeys0[r][c]);
+				break;
+				case 0xF0:
+				pressmacrokey(hexaKeys0[r][c]);
+				break;
 				case 0x09:
 				presskey(hexaKeys1[r][c]);
 				break;
@@ -149,6 +153,12 @@ void XDMode(){
 				break;
 				case 0x0D:
 				pressconsumerkey(hexaKeys1[r][c]);
+				break;
+				case 0x0E:
+				pressswitchkey(hexaKeys1[r][c]);
+				break;
+				case 0x0F:
+				pressmacrokey(hexaKeys1[r][c]);
 				break;
 			}
 		}

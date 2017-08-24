@@ -39,11 +39,9 @@ void init_ledcols(){
 	DDRB |= (1 << 7 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 1 | 1 << 0);
 	PORTB&=~(1 << 7 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 1 | 1 << 0);
 }
-
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
 uint8_t RowLED[ROWS+1]={15,18,17,16,2,19};
-uint8_t ColLED[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
 void Open_LED(){}
 void Close_LED(){}
 void init_LED(){}
@@ -61,7 +59,6 @@ uint8_t hexaKeys1[ROWS][COLS] = {
 	{KEY_LEFT_SHIFT,0x00 ,KEY_NUM_LOCK,KEY_SCROLL_LOCK,KEY_INSERT,KEY_PRINTSCREEN,0x00,0x00,0x00,0x00,0x00,0x00,0x00,KEY_RIGHT_SHIFT},
 	{KEY_LEFT_CTRL,KEY_LEFT_GUI,KEY_LEFT_ALT ,0x00,0x00,KEY_SPACE,0x00,0x00,0x00,0x00,KEY_RIGHT_ALT,KEY_RIGHT_GUI,KEY_FN, KEY_RIGHT_CTRL  }
 };
-
 uint8_t keymask[ROWS][COLS] = {
 	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
 	{0x11,0x10,0x11,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x11},
@@ -76,7 +73,7 @@ uint8_t keymaskled[ROWS][COLS] = {
 	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
 	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
 };
-uint8_t r,c,i;
+uint8_t r,c;
 uint8_t stepLED=0;
 uint8_t delay_after=0;
 uint8_t delay_before=0;
@@ -84,13 +81,13 @@ void LED(){
 init_ledcols();
 digitalWrite(RowLED[stepLED],HIGH);
 for (c = 0; c < COLS; c++) {
-	if(keymaskled[stepLED][c]){digitalWrite(ColLED[c],HIGH);}else{digitalWrite(ColLED[c],LOW);}
+	if(keymaskled[stepLED][c]){digitalWrite(colPins[c],HIGH);}else{digitalWrite(colPins[c],LOW);}
 	if(keymaskled[stepLED][c])keymaskled[stepLED][c]--;
 }
 if((keyboard_buffer.keyboard_leds&(1<<0))==(1<<0) && stepLED==0 )
-{ digitalWrite(ColLED[13],HIGH);}
+{ digitalWrite(colPins[13],HIGH);}
 if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
-{ digitalWrite(ColLED[0],HIGH);}
+{ digitalWrite(colPins[0],HIGH);}
 if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
 {PORTF|= (1 << 4);}else{PORTF&=~(1 << 4);}
 stepLED++;
