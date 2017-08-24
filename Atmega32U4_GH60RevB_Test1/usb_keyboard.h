@@ -72,6 +72,8 @@ void releasesystemkey(uint8_t key);
 void presssystemkey(uint8_t key);
 void releaseconsumerkey(uint8_t key);
 void pressconsumerkey(uint8_t key);
+void pressswitchkey(uint8_t key);
+void pressmacrokey(uint8_t key);
 uint8_t usb_keyboard_send_required();		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send_required();
@@ -149,7 +151,8 @@ report_raw_t raw_report_in;
 report_raw_t raw_report_out;
 report_keyboard_t keyboard_report;
 buffer_keyboard_t keyboard_buffer;
-
+uint8_t switchbuffer;
+uint8_t macrobuffer;
 // This file does not include the HID debug functions, so these empty
 // macros replace them with nothing, so users can compile code that
 // has calls to these functions.
@@ -292,6 +295,23 @@ buffer_keyboard_t keyboard_buffer;
 #define SYSTEM_SLEEP            0x82
 #define SYSTEM_WAKE_UP          0x83
 
+#define S0 1<<0
+#define S1 1<<1
+#define S2 1<<2
+#define S3 1<<3
+#define S4 1<<4
+#define S5 1<<5
+#define S6 1<<6
+#define S7 1<<7
+
+#define MACRO0 S0
+#define MACRO1 S1
+#define MACRO2 S2
+#define MACRO3 S3
+#define MACRO4 S4
+#define MACRO5 S5
+#define MACRO6 S6
+#define MACRO7 S7
 /*
 //application launch 
 #define AL_CC_CONFIG            0x0183

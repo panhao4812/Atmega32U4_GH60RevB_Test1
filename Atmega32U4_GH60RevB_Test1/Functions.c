@@ -167,6 +167,12 @@ void releaseModifierKeys(uint8_t key)
 {
 	keyboard_buffer.keyboard_modifier_keys&=~key;
 }
+void pressswitchkey(uint8_t key){
+	switchbuffer^=key;
+}
+void pressmacrokey(uint8_t key){
+	macrobuffer^=key;
+}
 uint8_t usb_keyboard_send_required(){
 	uint8_t send_required_t=0;
 	if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys)
