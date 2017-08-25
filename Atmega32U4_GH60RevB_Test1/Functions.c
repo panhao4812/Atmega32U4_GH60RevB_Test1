@@ -375,32 +375,24 @@ uint8_t digitalRead(uint8_t IO){
 }
 #endif
 ////////////////////keyprint////////////////////
-uint8_t usb_macro_send(){
-	if(macroreport==macrobuffer)return 1;
-	macroreport=macrobuffer;
-	if((macroreport&MACRO2)==MACRO2){
-		uint8_t i;
-		keyboard_buffer.Send_Required=1;
-		if(keyboard_report.modifier&0x22){
-			for ( i=0; i < 6; i++) {
-				if (keyboard_report.keycode[i] == KEY_TILDE) {return 0;}
-			}
-			for ( i=0; i < 6; i++) {
-				if (keyboard_report.keycode[i] == 0) 
-				{keyboard_report.keycode[i] = KEY_TILDE;return 0;}
-			}
-		}
-		else{
-			for ( i=0; i < 6; i++) {
-				if (keyboard_report.keycode[i] == KEY_ESC) {return 0;}
-			}
-			for ( i=0; i < 6; i++) {
-				if (keyboard_report.keycode[i] == 0) 
-				{keyboard_report.keycode[i] = KEY_ESC;return 0;}
-			}
-		}
+void pressmacrokey(uint8_t key){
+if(key==MACRO2){	
+	if(keyboard_report.modifier){
+	//不能用keyboard buffer 因为buffer是记录不稳定状态
+	//report 则记录稳定状态
+		presskey(KEY_TILDE);
 	}
-	return 0;
+	else{
+		presskey(KEY_ESC);
+	}
+}
+macrobuffer|=key;
+}
+uint8_t usb_macro_send_required(){	
+		if (macroreport!=macrobuffer){
+		macroreport=macrobuffer;
+		return 1;}
+		return 0;
 }
 void keyPrintWordEEP(uint16_t address_t){
 	uint16_t len=eeprom_read_word((uint16_t *)address_t);

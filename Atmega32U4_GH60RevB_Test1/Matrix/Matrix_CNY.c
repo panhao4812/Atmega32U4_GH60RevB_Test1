@@ -93,6 +93,9 @@ if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
 stepLED++;
 if(stepLED>=ROWS)stepLED=0;
 }
+uint8_t usb_macro_send(){
+	return 0;
+}
 void PokerMode(){
 ///////////////////////////////////////////////
 	init_ledrows();init_rows();init_cols();
@@ -112,6 +115,7 @@ void PokerMode(){
 //////////////////////////////////////////////
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();
+	macrobuffer=0;
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
 			switch(keymask[r][c]&FN){
@@ -130,6 +134,9 @@ void PokerMode(){
 				case 0xD0:
 				pressconsumerkey(hexaKeys0[r][c]);
 				break;
+				case 0xF0:
+				pressmacrokey(hexaKeys0[r][c]);
+				break;
 				case 0x09:
 				presskey(hexaKeys1[r][c]);
 				break;
@@ -144,14 +151,20 @@ void PokerMode(){
 				break;
 				case 0x0D:
 				pressconsumerkey(hexaKeys1[r][c]);
-				break;			
+				break;
+				case 0x0F:
+				pressmacrokey(hexaKeys1[r][c]);
+				break;
 			}
 		}
 	}
+	if(usb_macro_send_required())delay_before=_delay_before;
 	if(usb_keyboard_send_required())delay_before=_delay_before;
 	if(usb_mouse_send_required())delay_before=_delay_before;
-	if(delay_after==_delay_after && delay_before==1){usb_keyboard_send();usb_mouse_send();}
-	if(delay_after==1){usb_keyboard_send();usb_mouse_send();}
+	if(delay_after==_delay_after && delay_before==1)
+	{usb_macro_send();usb_keyboard_send();usb_mouse_send();}
+	if(delay_after==1)
+	{usb_macro_send();usb_keyboard_send();usb_mouse_send();}
 	if(delay_after>0)delay_after-=1;
 	if(delay_before>0)delay_before-=1;
 }

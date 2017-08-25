@@ -97,6 +97,9 @@ void LED(){
 		else {delayval=Maxdelay;}
 	}
 }
+uint8_t usb_macro_send(){
+	return 0;
+}
 /////////////////////////////////////////////////////////////////////
 uint8_t r,c;
 uint8_t delay_after=0;
@@ -115,6 +118,7 @@ void XDMode(){
 	}
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();
+	macrobuffer=0;
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
 			switch(keymask[r][c]&FN){
@@ -157,9 +161,9 @@ void XDMode(){
 			}
 		}
 	}
+	if(usb_macro_send_required())delay_before=_delay_before;
 	if(usb_keyboard_send_required())delay_before=_delay_before;
 	if(usb_mouse_send_required())delay_before=_delay_before;
-	if(usb_macro_send_required())delay_before=_delay_before;
 	if(delay_after==_delay_after && delay_before==1)
 	{usb_macro_send();usb_keyboard_send();usb_mouse_send();}
 	if(delay_after==1)

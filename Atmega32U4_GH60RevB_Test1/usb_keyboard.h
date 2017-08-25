@@ -9,8 +9,8 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-#define  xd60
-//#define CNY
+//#define  xd60
+#define CNY
 //#define oh77
 
 #if defined(xd60)
@@ -158,8 +158,8 @@ buffer_keyboard_t keyboard_buffer;
 uint8_t macroreport;
 uint8_t macrobuffer;
 static inline void ClearMacro(){macrobuffer=0;macroreport=0;}
-static inline void pressmacrokey(uint8_t key){macrobuffer^=key;}
-static inline uint8_t usb_macro_send_required(){return(macroreport!=macrobuffer);}
+void pressmacrokey(uint8_t key);
+uint8_t usb_macro_send_required();
 uint8_t usb_macro_send();
 //前4个macro是被预定的，后四个自定义
 #define MACRO0 0x01//full led
