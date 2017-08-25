@@ -290,8 +290,7 @@ void usb_init(void)
 	ClearKeyboard();
 	ClearMouse();
 	ClearRaw();
-	switchbuffer=0;
-	macrobuffer=0;
+	ClearMacro();
 }
 // return 0 if the USB is not configured, or the configuration
 // number selected by the HOST

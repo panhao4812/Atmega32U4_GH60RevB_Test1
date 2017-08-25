@@ -130,12 +130,6 @@ void PokerMode(){
 				case 0xD0:
 				pressconsumerkey(hexaKeys0[r][c]);
 				break;
-				case 0xE0:
-				pressswitchkey(hexaKeys0[r][c]);
-				break;
-				case 0xF0:
-				pressmacrokey(hexaKeys0[r][c]);
-				break;
 				case 0x09:
 				presskey(hexaKeys1[r][c]);
 				break;
@@ -150,13 +144,7 @@ void PokerMode(){
 				break;
 				case 0x0D:
 				pressconsumerkey(hexaKeys1[r][c]);
-				break;
-				case 0x0E:
-				pressswitchkey(hexaKeys1[r][c]);
-				break;
-				case 0x0F:
-				pressmacrokey(hexaKeys1[r][c]);
-				break;
+				break;			
 			}
 		}
 	}

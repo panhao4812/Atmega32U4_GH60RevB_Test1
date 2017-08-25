@@ -167,12 +167,6 @@ void releaseModifierKeys(uint8_t key)
 {
 	keyboard_buffer.keyboard_modifier_keys&=~key;
 }
-void pressswitchkey(uint8_t key){
-	switchbuffer^=key;
-}
-void pressmacrokey(uint8_t key){
-	macrobuffer^=key;
-}
 uint8_t usb_keyboard_send_required(){
 	uint8_t send_required_t=0;
 	if(keyboard_report.modifier!=keyboard_buffer.keyboard_modifier_keys)
@@ -359,31 +353,57 @@ uint8_t digitalRead(uint8_t IO){
 	}
 	return value;
 }
-/*
-0		PIN_B0
-1		PIN_B1
-2		PIN_B2
-3		PIN_B3
-4		PIN_B7
-5		PIN_D0
-6		PIN_D1
-7		PIN_D2
-8		PIN_D3
-9		PIN_C6
-10		PIN_C7
-11		PIN_D6
-12		PIN_D7
-13		PIN_B4
-14		PIN_B5
-15		PIN_B6
-16		PIN_F7
-17		PIN_F6
-18		PIN_F5
-19		PIN_F4
-20		PIN_F1
-21		PIN_F0
-22		PIN_D4
-23		PIN_D5
-24		PIN_E6
-*/
 #endif
+//keyprint
+void keyPrintWordEEP(uint16_t address_t){
+	uint16_t len=eeprom_read_word((uint16_t *)address_t);
+	for(uint16_t i=0;i<len;i++){
+		uint16_t address=address_t+i*2+2;
+		if(address>maxEEP)break;
+		uint16_t data = eeprom_read_word((uint16_t *)address);
+		keyPrintChar(data);
+	}
+}
+void keyPrintChinese(uint8_t data[5]){
+	memset(keyboard_report.keycode,0,6);
+	keyboard_report.modifier = 0x40;
+	keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	uint8_t i=0;
+	for( i=0;i<5;i++){
+		keyboard_report.keycode[0]=98;
+		if(data[i]>0){keyboard_report.keycode[0]=data[i]+88;}
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+		keyboard_report.keycode[0] =0;
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	}
+	keyboard_report.modifier = 0;
+	keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+}
+void keyPrintEnglish(uint8_t data)
+{
+	if(data==0)return;
+	keyboard_report.modifier = (data >> 7) ? 0x20 : 0x00;//shift加了128
+	keyboard_report.keycode[0] =data & 0b01111111;//abs删除正负号
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	keyboard_report.modifier = 0;
+	keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+}
+void keyPrintChar(uint16_t wrapdata){
+	usbWord_t data=(usbWord_t)wrapdata;
+	if(data.bytes[1]==0x00){
+		keyPrintEnglish(data.bytes[0]);
+		}else{
+		uint16_t out=(uint16_t)data.word;
+		//out|=0x8080;//汉字内码每个byte最高位为1
+		uint8_t datachinese[5];
+		datachinese[4]=out%10;out=out/10;
+		datachinese[3]=out%10;out=out/10;
+		datachinese[2]=out%10;out=out/10;
+		datachinese[1]=out%10;out=out/10;
+		datachinese[0]=out;
+		keyPrintChinese(datachinese);
+	}
+}

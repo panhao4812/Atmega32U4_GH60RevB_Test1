@@ -9,8 +9,8 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-//#define  xd60
-#define CNY
+#define  xd60
+//#define CNY
 //#define oh77
 
 #if defined(xd60)
@@ -34,8 +34,6 @@
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0060//0x047C
 #endif
-
-
 
 #define SUPPORT_ENDPOINT_HALT // «∑Ò¡¢º¥÷–∂œep
 
@@ -72,8 +70,6 @@ void releasesystemkey(uint8_t key);
 void presssystemkey(uint8_t key);
 void releaseconsumerkey(uint8_t key);
 void pressconsumerkey(uint8_t key);
-void pressswitchkey(uint8_t key);
-void pressmacrokey(uint8_t key);
 uint8_t usb_keyboard_send_required();		// initialize everything
 uint8_t usb_keyboard_send();
 uint8_t usb_mouse_send_required();
@@ -81,7 +77,10 @@ uint8_t usb_mouse_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
-
+void keyPrintWordEEP(uint16_t address);
+void keyPrintChinese(uint8_t data[5]);
+void keyPrintEnglish(uint8_t data);
+void keyPrintChar(uint16_t wrapdata);
 typedef struct  {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
@@ -113,7 +112,10 @@ typedef  union  {
 	uint16_t      word[RAW_EPSIZE/2];
 	uint8_t       bytes[RAW_EPSIZE];
 }__attribute__ ((packed))report_raw_t;
-
+typedef union {
+	uint16_t    word;
+	uint8_t     bytes[2];
+}__attribute__ ((packed))usbWord_t;
 typedef struct {
 	uint8_t mouse_keys;
 	int8_t x;
@@ -146,19 +148,29 @@ typedef struct {
 
 report_mouse_t mouse_report;
 buffer_mouse_t mouse_buffer;
-#define maxEEP (uint16_t)0x03FF // (1k eeprom)
+#define maxEEP (uint16_t)0x03FF // (eeprom 4k-1)
 report_raw_t raw_report_in;
 report_raw_t raw_report_out;
 report_keyboard_t keyboard_report;
 buffer_keyboard_t keyboard_buffer;
-uint8_t switchbuffer;
+uint8_t macroreport;
 uint8_t macrobuffer;
-// This file does not include the HID debug functions, so these empty
-// macros replace them with nothing, so users can compile code that
-// has calls to these functions.
+static inline void ClearMacro(){macrobuffer=0;macroreport=0;}
+static inline void pressmacrokey(uint8_t key){macrobuffer^=key;}
+static inline uint8_t usb_macro_send_required(){return(macroreport!=macrobuffer);}
+static inline void usb_macro_send(){if(macroreport!=macrobuffer)macrobuffer=macroreport;}
+
+#define MACRO0 0x01
+#define MACRO1 0x02
+#define MACRO2 0x04
+#define MACRO3 0x08
+#define MACRO4 0x10
+#define MACRO5 0x20
+#define MACRO6 0x40
+#define MACRO7 0x80
+
 #define usb_debug_putchar(c)
 #define usb_debug_flush_output()
-
 
 #define KEY_CTRL	0x01
 #define KEY_SHIFT	0x02
@@ -295,23 +307,7 @@ uint8_t macrobuffer;
 #define SYSTEM_SLEEP            0x82
 #define SYSTEM_WAKE_UP          0x83
 
-#define S0 1<<0
-#define S1 1<<1
-#define S2 1<<2
-#define S3 1<<3
-#define S4 1<<4
-#define S5 1<<5
-#define S6 1<<6
-#define S7 1<<7
 
-#define MACRO0 S0
-#define MACRO1 S1
-#define MACRO2 S2
-#define MACRO3 S3
-#define MACRO4 S4
-#define MACRO5 S5
-#define MACRO6 S6
-#define MACRO7 S7
 /*
 //application launch 
 #define AL_CC_CONFIG            0x0183
@@ -327,14 +323,13 @@ uint8_t macrobuffer;
 #define AC_REFRESH              0x0227
 #define AC_BOOKMARKS            0x022A
 //supplement for Bluegiga iWRAP HID(not supported by Windows?) 
+#define AC_MINIMIZE             0x0206
+//*/
 #define AL_LOCK                 0x019E
 #define TRANSPORT_RECORD        0x00B2
 #define TRANSPORT_FAST_FORWARD  0x00B3
 #define TRANSPORT_REWIND        0x00B4
 #define TRANSPORT_EJECT         0x00B8
-#define AC_MINIMIZE             0x0206
-//*/
-
 // Everything below this point is only intended for usb_serial.c
 // Misc functions to wait for ready and send/receive packets
 /*

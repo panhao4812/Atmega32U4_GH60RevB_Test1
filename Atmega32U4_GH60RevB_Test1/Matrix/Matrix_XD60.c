@@ -23,7 +23,7 @@ uint8_t hexaKeys1[ROWS][COLS] = {
 	{KEY_LEFT_CTRL,KEY_FN,KEY_LEFT_ALT,0x00,0x00,KEY_SPACE,0x00,0x00,KEY_LEFT,0x00,KEY_FN,KEY_RIGHT_CTRL,KEY_DOWN,KEY_RIGHT}
 };
 //keymask_bits:7-press 654-hexatype0 3-press 210-hexatype1
-//type: 1-key 2-modifykey 3-mousekey 4-systemkey 5-consumerkey 6-FN 7-Switch,8-macro
+//type: 1-key 2-modifykey 3-mousekey 4-systemkey 5-consumerkey 6-FN 7-macro
 uint8_t keymask[ROWS][COLS] = {
 	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
 	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
@@ -133,9 +133,6 @@ void XDMode(){
 				case 0xD0:
 				pressconsumerkey(hexaKeys0[r][c]);
 				break;
-				case 0xE0:
-				pressswitchkey(hexaKeys0[r][c]);
-				break;
 				case 0xF0:
 				pressmacrokey(hexaKeys0[r][c]);
 				break;
@@ -154,9 +151,6 @@ void XDMode(){
 				case 0x0D:
 				pressconsumerkey(hexaKeys1[r][c]);
 				break;
-				case 0x0E:
-				pressswitchkey(hexaKeys1[r][c]);
-				break;
 				case 0x0F:
 				pressmacrokey(hexaKeys1[r][c]);
 				break;
@@ -165,8 +159,11 @@ void XDMode(){
 	}
 	if(usb_keyboard_send_required())delay_before=_delay_before;
 	if(usb_mouse_send_required())delay_before=_delay_before;
-	if(delay_after==_delay_after && delay_before==1){usb_keyboard_send();usb_mouse_send();}
-	if(delay_after==1){usb_keyboard_send();usb_mouse_send();}
+	if(usb_macro_send_required())delay_before=_delay_before;
+	if(delay_after==_delay_after && delay_before==1)
+	{usb_keyboard_send();usb_mouse_send();usb_macro_send();}
+	if(delay_after==1)
+	{usb_keyboard_send();usb_mouse_send();usb_macro_send();}
 	if(delay_after>0)delay_after-=1;
 	if(delay_before>0)delay_before-=1;
 }
