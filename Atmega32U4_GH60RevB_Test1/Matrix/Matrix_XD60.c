@@ -9,7 +9,7 @@ uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
 //                     1  2  3  4  5  6  7 8 9 10 11 12 13 14
 
 uint8_t hexaKeys0[ROWS][COLS] = {
-	{KEY_ESC,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_MINUS,KEY_EQUAL,KEY_BACKSPACE},
+	{MACRO2,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_MINUS,KEY_EQUAL,KEY_BACKSPACE},
 	{KEY_TAB,KEY_Q,KEY_W,KEY_E,KEY_R,KEY_T,KEY_Y,KEY_U,KEY_I,KEY_O,KEY_P,KEY_LEFT_BRACE,KEY_RIGHT_BRACE,KEY_BACKSLASH},
 	{KEY_CAPS_LOCK,KEY_A,KEY_S,KEY_D,KEY_F,KEY_G,KEY_H,KEY_J,KEY_K,KEY_L,KEY_SEMICOLON,KEY_QUOTE,0x00,KEY_ENTER},
 	{KEY_LEFT_SHIFT,0x00,KEY_Z,KEY_X,KEY_C,KEY_V,KEY_B,KEY_N,KEY_M,KEY_COMMA,KEY_PERIOD,0x00, KEY_SLASH,KEY_UP},
@@ -25,7 +25,7 @@ uint8_t hexaKeys1[ROWS][COLS] = {
 //keymask_bits:7-press 654-hexatype0 3-press 210-hexatype1
 //type: 1-key 2-modifykey 3-mousekey 4-systemkey 5-consumerkey 6-FN 7-macro
 uint8_t keymask[ROWS][COLS] = {
-	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
+	{0x71,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
 	{0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11},
 	{0x11,0x13,0x13,0x13,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x11},
 	{0x22,0x00,0x11,0x11,0x11,0x11,0x10,0x10,0x10,0x15,0x15,0x00,0x10,0x11},
@@ -161,9 +161,9 @@ void XDMode(){
 	if(usb_mouse_send_required())delay_before=_delay_before;
 	if(usb_macro_send_required())delay_before=_delay_before;
 	if(delay_after==_delay_after && delay_before==1)
-	{usb_keyboard_send();usb_mouse_send();usb_macro_send();}
+	{usb_macro_send();usb_keyboard_send();usb_mouse_send();}
 	if(delay_after==1)
-	{usb_keyboard_send();usb_mouse_send();usb_macro_send();}
+	{usb_macro_send();usb_keyboard_send();usb_mouse_send();}
 	if(delay_after>0)delay_after-=1;
 	if(delay_before>0)delay_before-=1;
 }

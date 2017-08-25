@@ -1,4 +1,5 @@
 #include "Functions.h"
+
 void ResetMatrix(uint8_t mask,uint16_t address){
 	uint8_t j=0;
 	for (int r = 0; r < ROWS; r++) {
@@ -74,6 +75,7 @@ void eepwrite(){
 	}
 }
 void ClearMouse(){
+	memset(&print_mouse_report, 0, sizeof(mouse_report));
 	memset(&mouse_report, 0, sizeof(mouse_report));
 	memset(&mouse_buffer,0,sizeof(mouse_buffer));
 	mouse_report.mouse.report_id= REPORT_ID_MOUSE;
@@ -82,6 +84,7 @@ void ClearMouse(){
 	mouse_buffer.mouse_protocol=1;
 }
 void ClearKeyboard(){
+	memset( &print_keyboard_report, 0,sizeof(keyboard_report));
 	memset( &keyboard_report, 0,sizeof(keyboard_report));
 	memset( &keyboard_buffer, 0,sizeof(keyboard_buffer));
 	keyboard_buffer.enable_pressing=1;
@@ -103,13 +106,30 @@ void presssystemkey(uint8_t key){
 	mouse_buffer.system_keys=0x0000|key;
 }
 void pressconsumerkey(uint8_t key){
-	mouse_buffer.consumer_keys=0x0000|key;
-}
-void pressconsumerkeyAL(uint8_t key){
-	mouse_buffer.consumer_keys=0x0100|key;
-}
-void pressconsumerkeyAC(uint8_t key){
-	mouse_buffer.consumer_keys=0x0200|key;
+	uint8_t mask_t=key&0xF0;
+	switch(mask_t){
+		case 0xB0:
+		mouse_buffer.consumer_keys=0x0000|key;
+		break;
+		case 0xC0:
+		mouse_buffer.consumer_keys=0x0000|key;
+		break;
+		case 0xE0:
+		mouse_buffer.consumer_keys=0x0000|key;
+		break;
+		case 0x80:
+		mouse_buffer.consumer_keys=0x0100|key;
+		break;
+		case 0x90:
+		mouse_buffer.consumer_keys=0x0100|key;
+		break;
+		case 0x20:
+		mouse_buffer.consumer_keys=0x0200|key;
+		break;
+		case 0x00:
+		mouse_buffer.consumer_keys=0x0200|key;
+		break;	
+	}
 }
 void pressmousekey(uint8_t key){
 	mouse_buffer.mouse_keys|=key;
@@ -354,7 +374,34 @@ uint8_t digitalRead(uint8_t IO){
 	return value;
 }
 #endif
-//keyprint
+////////////////////keyprint////////////////////
+uint8_t usb_macro_send(){
+	if(macroreport==macrobuffer)return 1;
+	macroreport=macrobuffer;
+	if((macroreport&MACRO2)==MACRO2){
+		uint8_t i;
+		keyboard_buffer.Send_Required=1;
+		if(keyboard_report.modifier&0x22){
+			for ( i=0; i < 6; i++) {
+				if (keyboard_report.keycode[i] == KEY_TILDE) {return 0;}
+			}
+			for ( i=0; i < 6; i++) {
+				if (keyboard_report.keycode[i] == 0) 
+				{keyboard_report.keycode[i] = KEY_TILDE;return 0;}
+			}
+		}
+		else{
+			for ( i=0; i < 6; i++) {
+				if (keyboard_report.keycode[i] == KEY_ESC) {return 0;}
+			}
+			for ( i=0; i < 6; i++) {
+				if (keyboard_report.keycode[i] == 0) 
+				{keyboard_report.keycode[i] = KEY_ESC;return 0;}
+			}
+		}
+	}
+	return 0;
+}
 void keyPrintWordEEP(uint16_t address_t){
 	uint16_t len=eeprom_read_word((uint16_t *)address_t);
 	for(uint16_t i=0;i<len;i++){
@@ -365,31 +412,32 @@ void keyPrintWordEEP(uint16_t address_t){
 	}
 }
 void keyPrintChinese(uint8_t data[5]){
-	memset(keyboard_report.keycode,0,6);
-	keyboard_report.modifier = 0x40;
-	keyboard_report.keycode[0] =0;
-	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	memset(print_keyboard_report.keycode,0,6);
+	print_keyboard_report.modifier = 0x40;
+	print_keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
 	uint8_t i=0;
 	for( i=0;i<5;i++){
-		keyboard_report.keycode[0]=98;
-		if(data[i]>0){keyboard_report.keycode[0]=data[i]+88;}
-		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
-		keyboard_report.keycode[0] =0;
-		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+		print_keyboard_report.keycode[0]=98;
+		if(data[i]>0){print_keyboard_report.keycode[0]=data[i]+88;}
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+		print_keyboard_report.keycode[0] =0;
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
 	}
-	keyboard_report.modifier = 0;
-	keyboard_report.keycode[0] =0;
-	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	print_keyboard_report.modifier = 0;
+	print_keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
 }
 void keyPrintEnglish(uint8_t data)
 {
 	if(data==0)return;
-	keyboard_report.modifier = (data >> 7) ? 0x20 : 0x00;//shift加了128
-	keyboard_report.keycode[0] =data & 0b01111111;//abs删除正负号
-	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
-	keyboard_report.modifier = 0;
-	keyboard_report.keycode[0] =0;
-	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&keyboard_report,8,50);
+	memset(print_keyboard_report.keycode,0,6);
+	print_keyboard_report.modifier = (data >> 7) ? 0x20 : 0x00;//shift加了128
+	print_keyboard_report.keycode[0] =data & 0b01111111;//abs删除正负号
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+	print_keyboard_report.modifier = 0;
+	print_keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
 }
 void keyPrintChar(uint16_t wrapdata){
 	usbWord_t data=(usbWord_t)wrapdata;

@@ -147,23 +147,25 @@ typedef struct {
 }__attribute__ ((packed))  buffer_keyboard_t;
 
 report_mouse_t mouse_report;
+report_mouse_t print_mouse_report;
 buffer_mouse_t mouse_buffer;
 #define maxEEP (uint16_t)0x03FF // (eeprom 4k-1)
 report_raw_t raw_report_in;
 report_raw_t raw_report_out;
 report_keyboard_t keyboard_report;
+report_keyboard_t print_keyboard_report;
 buffer_keyboard_t keyboard_buffer;
 uint8_t macroreport;
 uint8_t macrobuffer;
 static inline void ClearMacro(){macrobuffer=0;macroreport=0;}
 static inline void pressmacrokey(uint8_t key){macrobuffer^=key;}
 static inline uint8_t usb_macro_send_required(){return(macroreport!=macrobuffer);}
-static inline void usb_macro_send(){if(macroreport!=macrobuffer)macrobuffer=macroreport;}
-
-#define MACRO0 0x01
-#define MACRO1 0x02
-#define MACRO2 0x04
-#define MACRO3 0x08
+uint8_t usb_macro_send();
+//前4个macro是被预定的，后四个自定义
+#define MACRO0 0x01//full led
+#define MACRO1 0x02//rgb led
+#define MACRO2 0x04//esc ~
+#define MACRO3 0x08//print eep
 #define MACRO4 0x10
 #define MACRO5 0x20
 #define MACRO6 0x40
@@ -285,51 +287,47 @@ static inline void usb_macro_send(){if(macroreport!=macrobuffer)macrobuffer=macr
 #define MOUSE_LEFT	1<<0
 #define MOUSE_RIGHT	1<<1
 #define MOUSE_MID	1<<2
-#define MOUSE_4	1<<3
-#define MOUSE_5	1<<4
+#define MOUSE_4	    1<<3
+#define MOUSE_5	    1<<4
 
 #define KEY_FN 0
 #define REPORT_ID_MOUSE     1
 #define REPORT_ID_SYSTEM    2
 #define REPORT_ID_CONSUMER  3
-
-#define AUDIO_MUTE              0xE2
-#define AUDIO_VOL_UP            0xE9
-#define AUDIO_VOL_DOWN          0xEA
-#define TRANSPORT_NEXT_TRACK    0xB5
-#define TRANSPORT_PREV_TRACK    0xB6
-#define TRANSPORT_STOP          0xB7
-#define TRANSPORT_STOP_EJECT    0xCC
-#define TRANSPORT_PLAY_PAUSE    0xCD
-
 /* Generic Desktop Page(0x01) - system power control */
 #define SYSTEM_POWER_DOWN       0x81
 #define SYSTEM_SLEEP            0x82
 #define SYSTEM_WAKE_UP          0x83
-
-
-/*
+////////////////////////////////////////////////////////
+#define AUDIO_MUTE              0xE2
+#define AUDIO_VOL_UP            0xE9
+#define AUDIO_VOL_DOWN          0xEA
+#define TRANSPORT_RECORD        0xB2
+#define TRANSPORT_FAST_FORWARD  0xB3
+#define TRANSPORT_REWIND        0xB4
+#define TRANSPORT_NEXT_TRACK    0xB5
+#define TRANSPORT_PREV_TRACK    0xB6
+#define TRANSPORT_STOP          0xB7
+#define TRANSPORT_EJECT         0xB8
+#define TRANSPORT_STOP_EJECT    0xCC
+#define TRANSPORT_PLAY_PAUSE    0xCD
 //application launch 
-#define AL_CC_CONFIG            0x0183
-#define AL_EMAIL                0x018A
-#define AL_CALCULATOR           0x0192
-#define AL_LOCAL_BROWSER        0x0194
+#define AL_CC_CONFIG           0x83// 0x0183
+#define AL_EMAIL               0x8A// 0x018A
+#define AL_CALCULATOR          0x92// 0x0192
+#define AL_LOCAL_BROWSER       0x94// 0x0194
+#define AL_LOCK                0x9E// 0x019E
 //application control 
-#define AC_SEARCH               0x0221
-#define AC_HOME                 0x0223
-#define AC_BACK                 0x0224
-#define AC_FORWARD              0x0225
-#define AC_STOP                 0x0226
-#define AC_REFRESH              0x0227
-#define AC_BOOKMARKS            0x022A
+#define AC_SEARCH              0x21// 0x0221
+#define AC_HOME                0x23// 0x0223
+#define AC_BACK                0x24// 0x0224
+#define AC_FORWARD             0x25// 0x0225
+#define AC_STOP                0x26// 0x0226
+#define AC_REFRESH             0x27// 0x0227
+#define AC_BOOKMARKS           0x2A// 0x022A
+#define AC_MINIMIZE            0x06// 0x0206
 //supplement for Bluegiga iWRAP HID(not supported by Windows?) 
-#define AC_MINIMIZE             0x0206
-//*/
-#define AL_LOCK                 0x019E
-#define TRANSPORT_RECORD        0x00B2
-#define TRANSPORT_FAST_FORWARD  0x00B3
-#define TRANSPORT_REWIND        0x00B4
-#define TRANSPORT_EJECT         0x00B8
+
 // Everything below this point is only intended for usb_serial.c
 // Misc functions to wait for ready and send/receive packets
 /*
