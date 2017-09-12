@@ -9,9 +9,8 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-//#define  xd60
-#define CNY
-//#define oh77
+#define  xd60
+//#define CNY
 
 #if defined(xd60)
 #define ROWS  5
@@ -23,11 +22,6 @@
 #define COLS  14
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0260//0x047C
-#elif defined(oh77)
-#define ROWS  11
-#define COLS  7
-#define VENDOR_ID		0x32C4//0x16C0
-#define PRODUCT_ID		0x0375//0x047C
 #else
 #define ROWS  5
 #define COLS  14

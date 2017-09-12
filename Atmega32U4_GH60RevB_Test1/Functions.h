@@ -33,7 +33,7 @@ extern  uint8_t rowPins[ROWS];
 extern  uint8_t colPins[COLS];
 
 
-#define _delay_after 0x09
+#define _delay_after 0x08
 #define _delay_before 0x03
 int init_main(void);
 void init_cols();

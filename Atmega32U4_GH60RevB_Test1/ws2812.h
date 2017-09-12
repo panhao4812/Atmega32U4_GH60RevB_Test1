@@ -10,7 +10,7 @@
 #define WS2812_DDR		DDRF
 #define WS2812_MASK		(1<<6)
 #define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
-#define Maxdelay 0xFF
+#define Maxdelay 0x0100
 
 
 #define nop() __asm__ __volatile__ ("nop")

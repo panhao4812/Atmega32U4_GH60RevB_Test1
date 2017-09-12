@@ -1,9 +1,16 @@
 
 #include "../Functions.h"
 #ifdef CNY
-//lrow B6 F5 F6 F7 B2 F4 
+//lrow B6 F5 F6 F7 B2 F4
 //row D0 D1 D2 D3 D5
 //col F0 F1 E6 C7 C6 B7 D4 B0 B1 B5 B4 D7 D6 B3
+uint8_t rowPins[ROWS]={5,6,7,8,23};
+uint8_t colPins[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
+uint8_t RowLED[ROWS+1]={15,18,17,16,2,19};
+uint8_t r,c;
+uint8_t stepLED=0;
+uint8_t delay_after=0;
+uint8_t delay_before=0;
 
 void init_ledrows(void) {
 	DDRB |= (1 << 2 | 1 << 6);
@@ -39,9 +46,7 @@ void init_ledcols(){
 	DDRB |= (1 << 7 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 1 | 1 << 0);
 	PORTB&=~(1 << 7 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 1 | 1 << 0);
 }
-uint8_t rowPins[ROWS]={5,6,7,8,23};
-uint8_t colPins[COLS]={21,20,24,10,9,4,22,0,1,14,13,12,11,3};
-uint8_t RowLED[ROWS+1]={15,18,17,16,2,19};
+
 void Open_LED(){}
 void Close_LED(){}
 void init_LED(){}
@@ -73,31 +78,28 @@ uint8_t keymaskled[ROWS][COLS] = {
 	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
 	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
 };
-uint8_t r,c;
-uint8_t stepLED=0;
-uint8_t delay_after=0;
-uint8_t delay_before=0;
+
 void LED(){
-init_ledcols();
-digitalWrite(RowLED[stepLED],HIGH);
-for (c = 0; c < COLS; c++) {
-	if(keymaskled[stepLED][c]){digitalWrite(colPins[c],HIGH);}else{digitalWrite(colPins[c],LOW);}
-	if(keymaskled[stepLED][c])keymaskled[stepLED][c]--;
-}
-if((keyboard_buffer.keyboard_leds&(1<<0))==(1<<0) && stepLED==0 )
-{ digitalWrite(colPins[13],HIGH);}
-if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
-{ digitalWrite(colPins[0],HIGH);}
-if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
-{PORTF|= (1 << 4);}else{PORTF&=~(1 << 4);}
-stepLED++;
-if(stepLED>=ROWS)stepLED=0;
+	init_ledcols();
+	digitalWrite(RowLED[stepLED],HIGH);
+	for (c = 0; c < COLS; c++) {
+		if(keymaskled[stepLED][c]){digitalWrite(colPins[c],HIGH);}else{digitalWrite(colPins[c],LOW);}
+		if(keymaskled[stepLED][c])keymaskled[stepLED][c]--;
+	}
+	if((keyboard_buffer.keyboard_leds&(1<<0))==(1<<0) && stepLED==0 )
+	{ digitalWrite(colPins[13],HIGH);}
+	if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1) && stepLED==2 )
+	{ digitalWrite(colPins[0],HIGH);}
+	if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2))
+	{PORTF|= (1 << 4);}else{PORTF&=~(1 << 4);}
+	stepLED++;
+	if(stepLED>=ROWS)stepLED=0;
 }
 uint8_t usb_macro_send(){
 	return 0;
 }
 void PokerMode(){
-///////////////////////////////////////////////
+	///////////////////////////////////////////////
 	init_ledrows();init_rows();init_cols();
 	FN=0xF0;
 	for (r = 0; r < ROWS; r++) {
@@ -110,9 +112,9 @@ void PokerMode(){
 		}
 		init_rows();
 	}
-//////////////////////////////////////////////	
+	//////////////////////////////////////////////
 	LED();
-//////////////////////////////////////////////
+	//////////////////////////////////////////////
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();
 	macrobuffer=0;

@@ -132,9 +132,6 @@
     <Compile Include="Matrix\Matrix_CNY.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Matrix\Matrix_OH77.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Matrix\Matrix_XD60.c">
       <SubType>compile</SubType>
     </Compile>

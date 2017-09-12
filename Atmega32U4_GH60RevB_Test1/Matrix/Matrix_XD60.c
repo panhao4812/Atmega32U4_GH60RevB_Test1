@@ -3,11 +3,22 @@
 #ifdef xd60
 //row D0 D1 D2 D3 D5
 //col F0,F1,E6,C7,C6,B6,D4,B1,B7,B5,B4,D7,D6,B3
-uint8_t i,delayval;
+/*
+uint8_t LED_caps=2;
+uint8_t rgb=17;
+uint8_t full led=18;
+*/
 uint8_t rowPins[ROWS]={5,6,7,8,23};
 uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
 //                     1  2  3  4  5  6  7 8 9 10 11 12 13 14
-
+#define ledcaps 2
+#define fullled 18
+uint16_t cindex[WS2812_COUNT]={0,34,68,102,136,170};
+uint16_t delayval;
+uint8_t r,c,i;
+uint8_t delay_after=0;
+uint8_t delay_before=0;
+uint8_t ledmacro=0;
 uint8_t hexaKeys0[ROWS][COLS] = {
 	{MACRO2,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_MINUS,KEY_EQUAL,KEY_BACKSPACE},
 	{KEY_TAB,KEY_Q,KEY_W,KEY_E,KEY_R,KEY_T,KEY_Y,KEY_U,KEY_I,KEY_O,KEY_P,KEY_LEFT_BRACE,KEY_RIGHT_BRACE,KEY_BACKSLASH},
@@ -43,53 +54,42 @@ void init_rows(){
 		digitalWrite(rowPins[i],HIGH);
 	}
 }
-/////////////////////////////////////////////////////////////////////
-#define ledcount 2
-uint8_t ledPins[ledcount]={18,2};
-uint16_t cindex[WS2812_COUNT]={0,34,68,102,136,170};
 void Open_LED(){
-	for ( i=0; i<ledcount; i++){
-		digitalWrite(ledPins[i],LOW);
-	}
+		digitalWrite(ledcaps,LOW);
 }
 void Close_LED(){
-
-	for ( i=0; i<ledcount; i++){
-		digitalWrite(ledPins[i],HIGH);
-	}
+		digitalWrite(ledcaps,HIGH);
 }
-/*
-uint8_t LED_caps=2;
-uint8_t LED_GPIO1=17;
-uint8_t LED_GPIO2=18;
-*/
+
 void init_LED(){
-	for ( i=0; i<ledcount; i++){
-		pinMode(ledPins[i],OUTPUT);
-		digitalWrite(ledPins[i],LOW);
-	}
+	pinMode(ledcaps,OUTPUT);
+	digitalWrite(ledcaps,LOW);
+	pinMode(fullled,OUTPUT);
+	digitalWrite(fullled,LOW);
+	ledmacro=0;
 	WS2812Setup();delayval=Maxdelay;
 	WS2812Clear();
 	WS2812Send();
 }
 void LED(){
-	for ( i=0; i<ledcount; i++){
-		if((keyboard_buffer.keyboard_leds&(1<<i))==(1<<i)){ digitalWrite(ledPins[i],LOW);}
-		else{ digitalWrite(ledPins[i],HIGH);}
-	}
+	if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1)){
+	digitalWrite(ledcaps,LOW);}
+	else{ digitalWrite(ledcaps,HIGH);}
+	if(ledmacro & (1<<0)){digitalWrite(fullled,LOW);}
+	else{digitalWrite(fullled,HIGH);}
 	if(delayval>=Maxdelay){
-		if((keyboard_buffer.keyboard_leds&(1<<2))==(1<<2)){
+		if(ledmacro & (1<<1)){
 			for(uint8_t i=0;i<WS2812_COUNT;i++){
 				uint8_t r=pgm_read_byte(Rcolors+cindex[i]);
 				uint8_t g=pgm_read_byte(Gcolors+cindex[i]);
 				uint8_t b=pgm_read_byte(Bcolors+cindex[i]);
-				WS2812SetRGB(i,r,g,b);		
-				cindex[i]++;	
-				if(cindex[i]>=WS2812ColorCount) cindex[i]=0;					
+				WS2812SetRGB(i,r,g,b);
+				cindex[i]++;
+				if(cindex[i]>=WS2812ColorCount) cindex[i]=0;
 			}
 			}else{
-		WS2812Clear();
-				}
+			WS2812Clear();
+		}
 		delayval--;
 		WS2812Send();
 		}else{
@@ -98,12 +98,10 @@ void LED(){
 	}
 }
 uint8_t usb_macro_send(){
+	ledmacro^=macroreport;
 	return 0;
 }
 /////////////////////////////////////////////////////////////////////
-uint8_t r,c;
-uint8_t delay_after=0;
-uint8_t delay_before=0;
 void XDMode(){
 	FN=0xF0;
 	for (r = 0; r < ROWS; r++) {
