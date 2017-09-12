@@ -15,18 +15,20 @@ uint8_t colPins[COLS]={16,17,18,19,20};
 uint8_t ledPins[COLS]={10,15,21,22,0};
 uint8_t rowPins[ROWS]={0xFF};
 uint8_t hexaKeys0[ROWS][COLS]={
-	{KEY_UP,KEY_FN,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
+	{KEY_UP,MACRO4,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
 };
 uint8_t hexaKeys1[ROWS][COLS]={
-	{MACRO4,KEY_FN,MACRO6,MACRO7,MACRO5}
+	{MACRO0,MACRO4,KEY_C,KEY_X,KEY_Z}
 };
 uint8_t keymask[ROWS][COLS]={
 	{0x17,0x66,0x17,0x17,0x17}
 };
-
+uint8_t keymaskled[ROWS][COLS] = {
+	{0x00,0x00,0x00,0x00,0x00}
+};
 void init_cols(){
-	DDRD &= ~0x1F;
-	PORTD|=  0x1F;
+	DDRD &=~0x1F;
+	PORTD|= 0x1F;
 }
 void init_rows(){
 }
@@ -36,7 +38,6 @@ void Open_LED(){
 	}
 }
 void Close_LED(){
-
 	for ( i=0; i<COLS; i++){
 		digitalWrite(ledPins[i],HIGH);
 	}
@@ -55,14 +56,21 @@ uint8_t usb_macro_send(){
 	ledmacro^=macroreport;
 	return 0;
 }
+void LED_macro1(){
+	if((ledmacro & (1<<0))==0){
+		for (c = 0; c < COLS; c++) {
+			if(keymaskled[0][c]){digitalWrite(ledPins[c],HIGH);}else{digitalWrite(ledPins[c],LOW);}
+			if(keymaskled[0][c])keymaskled[0][c]--;
+		}
+	}
+}
 void LED(){
 	//////////////////////////////FULL LRF/////////////////////
-	if((ledmacro & (1<<0))||(keyboard_buffer.keyboard_leds&(1<<1)))
+	if(ledmacro & (1<<0))
 	{Open_LED();}else{Close_LED();}
 	////////////////////////////RGB////////////////////////
 	if(delayval>=Maxdelay){
-		if((ledmacro & (1<<1))||(keyboard_buffer.keyboard_leds&(1<<2)))
-		{
+		if((ledmacro & (1<<1))||(keyboard_buffer.keyboard_leds&(1<<2))){
 			for(uint8_t i=0;i<WS2812_COUNT;i++){
 				uint8_t r=pgm_read_byte(Rcolors+cindex[i]);
 				uint8_t g=pgm_read_byte(Gcolors+cindex[i]);
@@ -81,16 +89,20 @@ void LED(){
 		else {delayval=Maxdelay;}
 	}
 }
-void BfaceMode(){
-	FN=0xF0;
+
+void StaryuMode(){
+	if(ledmacro&0x10){FN=0x0F;}else{FN=0xF0;}
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
 			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;}
-			else {keymask[r][c]|= 0x88;delay_after=_delay_after;}
-			if(keymask[r][c]==0xEE )FN=0x0F;
+			else {keymask[r][c]|= 0x88;delay_after=_delay_after;keymaskled[r][c]=0x6C;}
+			if(keymask[r][c]==0xEE ){
+				if(ledmacro&0x10){FN=0xF0;}else{FN=0x0F;}
+			}
 		}
 		init_rows();
 	}
+	LED_macro1();
 	releaseAllkeyboardkeys();
 	releaseAllmousekeys();
 	macrobuffer=0;
@@ -171,7 +183,7 @@ int init_main(void)
 				break;
 			}
 			else if(keyboard_buffer.enable_pressing==1){
-				BfaceMode();
+				StaryuMode();
 				LED();
 			}
 		}

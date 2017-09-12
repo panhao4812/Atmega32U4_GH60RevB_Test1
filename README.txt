@@ -42,6 +42,9 @@ uint8_t FN;
 //keymask（8bit） :mask&0xF0 或者 mask&0x0F 来切换层
 //keymask（16bit）:mask&0xF000, mask&0x0F00, mask&0x00F0, mask&0x000F 来切换层
 固定层即固定FN的值
+
+瞬时切换是base层->目标层
+层翻页是base层+1
 -------------------------------------
 按键延时
 延时按矩阵循环的周期来确定，不用delay
