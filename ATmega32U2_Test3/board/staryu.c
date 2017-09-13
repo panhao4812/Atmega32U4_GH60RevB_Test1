@@ -23,8 +23,8 @@ uint8_t hexaKeys1[ROWS][COLS]={
 uint8_t keymask[ROWS][COLS]={
 	{0x17,0x77,0x11,0x11,0x11}
 };
-uint8_t keymaskled[ROWS][COLS] = {
-	{0x00,0x00,0x00,0x00,0x00}
+uint16_t keymaskled[ROWS][COLS] = {
+	{0x0000,0x0000,0x0000,0x0000,0x0000}
 };
 void init_cols(){
 	DDRD &=~0x1F;
@@ -57,17 +57,16 @@ uint8_t usb_macro_send(){
 	return 0;
 }
 void LED_macro1(){
-	if((ledmacro & (1<<0))==0){
+	if(ledmacro & (1<<0)){
 		for (c = 0; c < COLS; c++) {
-			if(keymaskled[0][c]){digitalWrite(ledPins[c],HIGH);}else{digitalWrite(ledPins[c],LOW);}
-			if(keymaskled[0][c])keymaskled[0][c]--;
+			if(keymaskled[0][c]){digitalWrite(ledPins[c],LOW);keymaskled[0][c]--;}
+			else{digitalWrite(ledPins[c],HIGH);}
 		}
 	}
 }
 void LED(){
 	//////////////////////////////FULL LRF/////////////////////
-	if(ledmacro & (1<<0))
-	{Open_LED();}else{Close_LED();}
+	if((ledmacro & (1<<0))==0)Close_LED();
 	////////////////////////////RGB////////////////////////
 	if(delayval>=Maxdelay){
 		if((ledmacro & (1<<1))||(keyboard_buffer.keyboard_leds&(1<<2))){
@@ -95,7 +94,7 @@ void StaryuMode(){
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
 			if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;}
-			else {keymask[r][c]|= 0x88;delay_after=_delay_after;keymaskled[r][c]=0x6C;}
+			else {keymask[r][c]|= 0x88;delay_after=_delay_after;keymaskled[r][c]=0x0FFF;}
 			if(keymask[r][c]==0xEE ){
 				if(ledmacro&0x10){FN=0xF0;}else{FN=0x0F;}
 			}
