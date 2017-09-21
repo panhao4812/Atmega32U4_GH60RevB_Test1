@@ -10,6 +10,8 @@ Matrix\Matrix_CNY.c
 
 Matrix\Matrix_XD60.c
 
+Matrix\Satan.c
+
 usb_keyboard.c
 
 ws2812.c

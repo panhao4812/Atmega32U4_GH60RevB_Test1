@@ -135,6 +135,9 @@
     <Compile Include="Matrix\Matrix_XD60.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Matrix\Satan.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="usb_keyboard.c">
       <SubType>compile</SubType>
     </Compile>
