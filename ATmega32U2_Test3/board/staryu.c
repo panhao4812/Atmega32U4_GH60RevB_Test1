@@ -15,10 +15,10 @@ uint8_t colPins[COLS]={16,17,18,19,20};
 uint8_t ledPins[COLS]={10,15,21,22,0};
 uint8_t rowPins[ROWS]={0xFF};
 uint8_t hexaKeys0[ROWS][COLS]={
-	{KEY_UP,MACRO4,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
+	{KEY_UP,KEY_FN,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
 };
 uint8_t hexaKeys1[ROWS][COLS]={
-	{MACRO0,MACRO4,KEY_C,KEY_X,KEY_Z}
+	{MACRO0,KEY_FN,MACRO1,MACRO3,MACRO5}
 };
 uint8_t keymask[ROWS][COLS]={
 	{0x17,0x77,0x11,0x11,0x11}
@@ -54,6 +54,10 @@ void init_LED(){
 }
 uint8_t usb_macro_send(){
 	ledmacro^=macroreport;
+	if(macroreport&(1<<3)){
+		keyPrintWordEEP((uint16_t)32);
+		return 1;
+	}
 	return 0;
 }
 void LED_macro1(){

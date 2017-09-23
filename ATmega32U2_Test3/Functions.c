@@ -20,14 +20,11 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 	}
 }
 #define add1 10
-#define add2 add1+ROWS
-#define add3 add2+COLS
-#define add4 add3+(ROWS*COLS)
-#define add5 add4+(ROWS*COLS)
+#define add2 add1+ROWS //11
+#define add3 add2+COLS //16
+#define add4 add3+(ROWS*COLS) //21
+#define add5 add4+(ROWS*COLS) //26 31
 void ResetMatrixFormEEP(){
-	//////////////////////////////////menu///////////////////////
-	//(u8)address_hexakeys0,(u8)address_hexakeys0,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
-	//   10            10+5=15               10+5+14=29               10+5+14+70=99       10+5+14+140=169
 	uint16_t address_row=eeprom_read_word((uint16_t *)0);
 	uint16_t address_col=eeprom_read_word((uint16_t *)2);
 	uint16_t address_hexakeys0=eeprom_read_word((uint16_t *)4);
