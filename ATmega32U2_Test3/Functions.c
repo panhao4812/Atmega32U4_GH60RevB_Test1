@@ -1,5 +1,4 @@
 #include "Functions.h"
-
 void ResetMatrix(uint8_t mask,uint16_t address){
 	uint8_t j=0;
 	for (int r = 0; r < ROWS; r++) {
@@ -23,7 +22,9 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 #define add2 add1+ROWS //11
 #define add3 add2+COLS //16
 #define add4 add3+(ROWS*COLS) //21
-#define add5 add4+(ROWS*COLS) //26 31
+#define add5 add4+(ROWS*COLS) //26 
+#define addRGB add5+(ROWS*COLS) //31
+#define addPrint addRGB+(1*3) //34
 void ResetMatrixFormEEP(){
 	uint16_t address_row=eeprom_read_word((uint16_t *)0);
 	uint16_t address_col=eeprom_read_word((uint16_t *)2);
