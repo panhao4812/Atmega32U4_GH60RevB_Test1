@@ -66,7 +66,7 @@ void init_LED(){
 	digitalWrite(ledcaps,LOW);
 	pinMode(fullled,OUTPUT);
 	digitalWrite(fullled,LOW);
-	ledmacro=0;
+	ledmacro=0;if((RGB_Type&0xF0)==0x10)ledmacro=0x02;
 	WS2812Setup();delayval=Maxdelay;
 	WS2812Clear();
 	WS2812Send();
@@ -80,16 +80,19 @@ void LED(){
 	if(delayval>=Maxdelay){
 		if(ledmacro & (1<<1)){
 			for(uint8_t i=0;i<WS2812_COUNT;i++){
+				if((RGB_Type&0x0F)==0x01){
+					if(cindex[i]>=WS2812ColorCount) cindex[i]=0;
 				uint8_t r=pgm_read_byte(Rcolors+cindex[i]);
 				uint8_t g=pgm_read_byte(Gcolors+cindex[i]);
 				uint8_t b=pgm_read_byte(Bcolors+cindex[i]);
 				WS2812SetRGB(i,r,g,b);
 				cindex[i]++;
-				if(cindex[i]>=WS2812ColorCount) cindex[i]=0;
 			}
-			}else{
-			WS2812Clear();
-		}
+			else if((RGB_Type&0x0F)==0x00){
+				WS2812SetRGB(i,WS2812fix[i*3],WS2812fix[i*3+1],WS2812fix[i*3+2]);
+			}
+			}
+			}else{WS2812Clear();}
 		delayval--;
 		WS2812Send();
 		}else{
@@ -103,7 +106,6 @@ uint8_t usb_macro_send(){
 }
 /////////////////////////////////////////////////////////////////////
 void XDMode(){
-	FN=0xF0;
 	for (r = 0; r < ROWS; r++) {
 		pinMode(rowPins[r],OUTPUT);
 		digitalWrite(rowPins[r],LOW);
@@ -159,6 +161,7 @@ void XDMode(){
 			}
 		}
 	}
+	if(!IsBufferClear())FN=0xF0;//Fix FN key state error
 	if(usb_macro_send_required())delay_before=_delay_before;
 	if(usb_keyboard_send_required())delay_before=_delay_before;
 	if(usb_mouse_send_required())delay_before=_delay_before;

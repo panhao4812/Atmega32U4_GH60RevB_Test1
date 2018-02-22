@@ -25,6 +25,7 @@ uint8_t digitalRead(uint8_t IO);
 void closeJtag();
 //////////////////////override//////////////////////////
 uint8_t FN;
+uint8_t RGB_Type;// bit1-> 0 off 1 on ;bit0-> 0 fix£¬1 Rainbow
 
 extern  uint8_t hexaKeys0[ROWS][COLS] ;
 extern  uint8_t hexaKeys1[ROWS][COLS];
@@ -35,6 +36,13 @@ extern  uint8_t colPins[COLS];
 
 #define _delay_after 0x08
 #define _delay_before 0x03
+#define add1 10
+#define add2 add1+ROWS //15
+#define add3 add2+COLS //30
+#define add4 add3+(ROWS*COLS) //30+15*5=105
+#define add5 add4+(ROWS*COLS) //105+75=180
+#define addRGB add5+(ROWS*COLS) //180+75=255
+#define addPrint addRGB+(WS2812_COUNT*3) //255+12*3=291
 int init_main(void);
 void init_cols();
 void init_rows();
@@ -43,7 +51,7 @@ void pokerMode();
 void XDMode();
 void eepwrite();
 void ResetMatrixFormEEP();
-
+uint8_t IsBufferClear();
 void init_LED();
 void Open_LED();
 void Close_LED();

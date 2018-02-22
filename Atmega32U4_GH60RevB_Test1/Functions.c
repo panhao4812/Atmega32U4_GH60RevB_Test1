@@ -1,5 +1,16 @@
 #include "Functions.h"
-
+uint8_t IsBufferClear(){
+	uint8_t i;
+	if(mouse_buffer.mouse_keys!=0)return 1;
+	if(mouse_buffer.system_keys!=0)return 1;
+	if(mouse_buffer.consumer_keys!=0)return 1;
+	for ( i=0; i < 6; i++) {
+		if(keyboard_buffer.keyboard_keys[i] != 0)return 1;
+	}
+	if(keyboard_buffer.keyboard_modifier_keys!=0)return 1;
+	if(macrobuffer!=0)return 1;
+	return 0;
+}
 void ResetMatrix(uint8_t mask,uint16_t address){
 	uint8_t j=0;
 	for (int r = 0; r < ROWS; r++) {
@@ -19,27 +30,26 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 		}
 	}
 }
-#define add1 10
-#define add2 add1+ROWS
-#define add3 add2+COLS
-#define add4 add3+(ROWS*COLS)
-#define add5 add4+(ROWS*COLS)
 void ResetMatrixFormEEP(){
-	//////////////////////////////////menu///////////////////////
-	//(u8)address_hexakeys0,(u8)address_hexakeys0,(u16)address_hexakeys0,(u16)address_hexaKeys1,(u16)address_keymask
-	//   10            10+5=15               10+5+14=29               10+5+14+70=99       10+5+14+140=169
 	uint16_t address_row=eeprom_read_word((uint16_t *)0);
 	uint16_t address_col=eeprom_read_word((uint16_t *)2);
 	uint16_t address_hexakeys0=eeprom_read_word((uint16_t *)4);
 	uint16_t address_hexaKeys1=eeprom_read_word((uint16_t *)6);
 	uint16_t address_keymask=eeprom_read_word((uint16_t *)8);
-	uint8_t j;
+	uint16_t j;
 	///////////////////////////////////
-	if(address_row==add1){for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_row));}}
-	if(address_col==add2){for( j=0;j<COLS;j++){colPins[j]=eeprom_read_byte((uint8_t *)((uint16_t)j+address_col));}}
-	if(address_hexakeys0==add3){ResetMatrix(0,address_hexakeys0);}
-	if(address_hexaKeys1==add4){ResetMatrix(1,address_hexaKeys1);}
-	if(address_keymask==add5){ResetMatrix(2,address_keymask);}
+	if(address_row!=add1){return;}
+	if(address_col!=add2){return;}
+	if(address_hexakeys0!=add3){return;}
+	if(address_hexaKeys1!=add4){return;}
+	if(address_keymask!=add5){return;}
+	for( j=0;j<ROWS;j++){rowPins[j]=eeprom_read_byte((uint8_t *)(j+address_row));}
+	for( j=0;j<COLS;j++){colPins[j]=eeprom_read_byte((uint8_t *)(j+address_col));}
+	ResetMatrix(0,address_hexakeys0);
+	ResetMatrix(1,address_hexaKeys1);
+	ResetMatrix(2,address_keymask);
+	for( j=0;j<(WS2812_COUNT * 3);j++){WS2812fix[j]=eeprom_read_byte((uint8_t *)(j+addRGB));}
+	RGB_Type=eeprom_read_byte((uint8_t *)addPrint);
 }
 void eepwrite(){
 	//	address,word1,word2,word3

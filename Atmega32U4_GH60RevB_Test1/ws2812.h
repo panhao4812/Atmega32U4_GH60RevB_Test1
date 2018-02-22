@@ -4,14 +4,7 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include "avr/pgmspace.h"
-
-#define WS2812_COUNT	6
-#define WS2812_PORT		PORTF
-#define WS2812_DDR		DDRF
-#define WS2812_MASK		(1<<6)
-#define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
-#define Maxdelay 0x0100
-
+#include "usb_keyboard.h"
 
 #define nop() __asm__ __volatile__ ("nop")
 //ÄÚÇ¶»ã±àÖ¸Áînop ÑÓÊ± 0.25us

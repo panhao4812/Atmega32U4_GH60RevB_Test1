@@ -17,22 +17,33 @@
 #define COLS  14
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0160//0x047C
+#define WS2812_COUNT	12
 #elif defined(CNY)
 #define ROWS  5
 #define COLS  14
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0260//0x047C
+#define WS2812_COUNT	6
 #elif defined(satan)
 #define ROWS  5
 #define COLS  14
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0360//0x047C
+#define WS2812_COUNT	6
 #else
 #define ROWS  5
 #define COLS  14
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0060//0x047C
+#define WS2812_COUNT	6
 #endif
+
+#define WS2812_PORT		PORTF
+#define WS2812_DDR		DDRF
+#define WS2812_MASK		(1<<6)
+#define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
+#define Maxdelay 0x0100
+uint8_t WS2812fix[(WS2812_COUNT * 3)];
 
 #define SUPPORT_ENDPOINT_HALT //ÊÇ·ñÁ¢¼´ÖÐ¶Ïep
 
