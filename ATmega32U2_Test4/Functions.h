@@ -31,6 +31,13 @@ extern  uint8_t hexaKeys1[ROWS][COLS];
 extern  uint8_t keymask[ROWS][COLS];
 extern  uint8_t rowPins[ROWS];
 extern  uint8_t colPins[COLS];
+#define add1 10
+#define add2 add1+ROWS //11
+#define add3 add2+COLS //16
+#define add4 add3+(ROWS*COLS) //21
+#define add5 add4+(ROWS*COLS) //26
+#define addRGB add5+(ROWS*COLS) //31
+#define addPrint addRGB+(1*3) //34
 
 uint8_t IsBufferClear();
 #define _delay_after 0x90

@@ -38,9 +38,9 @@
 ///////////////////////////////////////////////
 #if defined(__AVR_ATmega32U2__)
 #define VENDOR_ID		0x32C2//芯片类型
-#define maxEEP (uint16_t)0x03FF // (eeprom 4k-1)
-#define address_start (uint16_t)0x03FF // 开始段
-#define address_end (uint16_t)0x03FF // 结束段
+#define maxEEP (uint16_t)0x03FF // (eeprom 1k-1)
+#define address_start (uint16_t)0x0301 // 12k+1
+#define address_end (uint16_t)0x37FF // 0x3800-1
 #elif defined(__AVR_ATmega16U2__)
 #define VENDOR_ID		0x16C2
 #elif defined(__AVR_ATmega8U2__)
@@ -64,6 +64,8 @@
 #elif defined(__AVR_ATMEGA88A__)
 #define VENDOR_ID		0x88A0
 #endif
+extern const  uint16_t  printflash[] PROGMEM;
+void PrintFlash(void) __attribute__((section(".mysection0"))); 
 /////////////////////////////////////////////////
 #define SUPPORT_ENDPOINT_HALT //是否立即中断ep
 

@@ -18,13 +18,7 @@ void ResetMatrix(uint8_t mask,uint16_t address){
 		}
 	}
 }
-#define add1 10
-#define add2 add1+ROWS //11
-#define add3 add2+COLS //16
-#define add4 add3+(ROWS*COLS) //21
-#define add5 add4+(ROWS*COLS) //26 
-#define addRGB add5+(ROWS*COLS) //31
-#define addPrint addRGB+(1*3) //34
+
 
 void ResetMatrixFormEEP(){
 	uint16_t address_row=eeprom_read_word((uint16_t *)0);
@@ -41,6 +35,7 @@ void ResetMatrixFormEEP(){
 	if(address_keymask==add5){ResetMatrix(2,address_keymask);}
 	for( j=0;j<(WS2812_COUNT * 3);j++){WS2812fix[j]=eeprom_read_byte((uint8_t *)(j+addRGB));}
 	RGB_Type=eeprom_read_byte((uint8_t *)addPrint);
+	RGB_Type&=0x11;
 }
 void eepwrite(){
 	//	address,word1,word2,word3
@@ -312,11 +307,19 @@ uint8_t usb_macro_send_required(){
 		return 1;}
 		return 0;
 }
+void PrintFlash(void) {
+	const uint16_t printflash[] PROGMEM= {
+		0x000D,
+		0x007A,0x0069,0x0061,0x006E,0x005F,
+		0x006B,0x0065,0x0079,0x0062,0x006F,
+		0x0061,0x0072,0x0064,1234,5678,
+		1234,5678,1234,5678,1234  //zian_keyboard
+	};
+}
 void keyPrintWordFlash(uint16_t address_t){
-return;
-	uint16_t len=pgm_read_word_near((uint16_t *)address_t);
+	uint16_t len=pgm_read_word_near((uint16_t *)(address_t+address_start));
 	for(uint16_t i=0;i<len;i++){
-		uint16_t address=address_t+i*2+2;
+		uint16_t address=address_t+address_start+i*2+2;
 		if(address>address_end)break;
 		uint16_t data = pgm_read_word_near((uint16_t *)address);
 		keyPrintChar(data);
