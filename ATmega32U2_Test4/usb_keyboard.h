@@ -39,8 +39,8 @@
 #if defined(__AVR_ATmega32U2__)
 #define VENDOR_ID		0x32C2//芯片类型
 #define maxEEP (uint16_t)0x03FF // (eeprom 1k-1)
-#define address_start (uint16_t)0x0301 // 12k+1
-#define address_end (uint16_t)0x37FF // 0x3800-1
+#define address_start (uint16_t)0x6900 // 12k+1
+#define address_end (uint16_t)0x6FF0 // 0x3800-1
 #elif defined(__AVR_ATmega16U2__)
 #define VENDOR_ID		0x16C2
 #elif defined(__AVR_ATmega8U2__)
@@ -64,8 +64,6 @@
 #elif defined(__AVR_ATMEGA88A__)
 #define VENDOR_ID		0x88A0
 #endif
-extern const  uint16_t  printflash[] PROGMEM;
-void PrintFlash(void) __attribute__((section(".mysection0"))); 
 /////////////////////////////////////////////////
 #define SUPPORT_ENDPOINT_HALT //是否立即中断ep
 
@@ -109,7 +107,7 @@ uint8_t usb_mouse_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
-void keyPrintWordFlash(uint16_t address_t);
+void keyPrintWordFlash();
 void keyPrintWordEEP(uint16_t address);
 void keyPrintChinese(uint8_t data[5]);
 void keyPrintEnglish(uint8_t data);

@@ -307,22 +307,31 @@ uint8_t usb_macro_send_required(){
 		return 1;}
 		return 0;
 }
-void PrintFlash(void) {
-	const uint16_t printflash[] PROGMEM= {
-		0x000D,
-		0x007A,0x0069,0x0061,0x006E,0x005F,
-		0x006B,0x0065,0x0079,0x0062,0x006F,
-		0x0061,0x0072,0x0064,1234,5678,
-		1234,5678,1234,5678,1234  //zian_keyboard
+//如果是函数==>void PrintFlash(void) __attribute__((section(".mysection0")));
+/*
+const uint16_t printflash[] __attribute__((section(".mysection0")))= {
+	0x000D,
+	0x007A,0x0069,0x0061,0x006E,0x005F,
+	0x006B,0x0065,0x0079,0x0062,0x006F,
+	0x0061,0x0072,0x0064,0x1212,0x1212,
+	0x1212,0x1212,0x1212,0x1212,0x1212  //zian_keyboard
+};
+可以在debug-map文件里面看地址 直接记事本打开map文件 然后搜关键字printflash
+*/
+const uint8_t printflash[] PROGMEM= {
+	0x0028,
+	0x007A,0x0069,0x0061,0x006E,0x005F,
+	0x006B,0x0065,0x0079,0x0062,0x006F,
+	0x0061,0x0072,0x0064,0x0012,0x0012,
+	0x0012,0x0012,0x0012,0x0012,0x0012  //zian_keyboard
 	};
-}
-void keyPrintWordFlash(uint16_t address_t){
-	uint16_t len=pgm_read_word_near((uint16_t *)(address_t+address_start));
-	for(uint16_t i=0;i<len;i++){
-		uint16_t address=address_t+address_start+i*2+2;
-		if(address>address_end)break;
-		uint16_t data = pgm_read_word_near((uint16_t *)address);
-		keyPrintChar(data);
+void keyPrintWordFlash(){
+	//uint8_t len=pgm_read_byte_near((uint16_t *)0x0104);
+	uint8_t len=20;
+	for(uint8_t i=0;i<len;i++){
+		//if(address>address_end)break;
+		uint8_t data = pgm_read_byte_near((uint16_t *)(0x0104+i*2+2));
+		keyPrintEnglish(data);
 	}
 }
 void keyPrintWordEEP(uint16_t address_t){

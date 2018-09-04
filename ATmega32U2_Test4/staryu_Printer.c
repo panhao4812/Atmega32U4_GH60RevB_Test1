@@ -21,10 +21,10 @@ uint8_t hexaKeys1[ROWS][COLS]={
 	{KEY_UP,KEY_FN,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
 };
 uint8_t hexaKeys0[ROWS][COLS]={
-	{MACRO0,MACRO1,KEY_1,MACRO3,MACRO2}
+	{MACRO0,MACRO1,MACRO4,MACRO3,MACRO2}
 };
 uint8_t keymask[ROWS][COLS]={
-	{0x70,0x70,0x10,0x71,0x71}
+	{0x70,0x70,0x70,0x71,0x71}
 };
 
 void init_cols(){
@@ -53,6 +53,7 @@ void init_LED(){
 	WS2812Clear();
 	WS2812Send();
 }
+
 uint8_t usb_macro_send(){
 	ledmacro^=macroreport;
 	if(macroreport&MACRO3){
@@ -60,7 +61,7 @@ uint8_t usb_macro_send(){
 		return 1;
 	}
 	if(macroreport&MACRO4){
-		keyPrintWordFlash(0);
+		keyPrintWordFlash();
 		return 1;
 	}
 	return 0;
