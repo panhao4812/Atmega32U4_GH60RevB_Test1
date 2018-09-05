@@ -39,7 +39,7 @@
 #if defined(__AVR_ATmega32U2__)
 #define VENDOR_ID		0x32C2//–æ∆¨¿‡–Õ
 #define maxEEP (uint16_t)0x03FF // (eeprom 1k-1)
-#define address_start (uint16_t)0x6900 // 12k+1
+#define address_start (uint16_t)0x3000 // 12k+1
 #define address_end (uint16_t)0x6FF0 // 0x3800-1
 #elif defined(__AVR_ATmega16U2__)
 #define VENDOR_ID		0x16C2
@@ -107,11 +107,13 @@ uint8_t usb_mouse_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
-void keyPrintWordFlash();
+void keyPrintWordFlash(uint8_t debug);
 void keyPrintWordEEP(uint16_t address);
 void keyPrintChinese(uint8_t data[5]);
 void keyPrintEnglish(uint8_t data);
 void keyPrintChar(uint16_t wrapdata);
+void keyPrintDecimal(uint16_t wrapdata);
+void keyPrintHexadecimal(uint16_t wrapdata);
 typedef struct  {
 	uint8_t bLength;
 	uint8_t bDescriptorType;

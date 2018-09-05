@@ -136,7 +136,7 @@ void pressconsumerkey(uint8_t key){
 		break;
 		case 0x00:
 		mouse_buffer.consumer_keys=0x0200|key;
-		break;	
+		break;
 	}
 }
 void pressmousekey(uint8_t key){
@@ -289,50 +289,101 @@ uint8_t usb_mouse_send(){
 }
 ////////////////////keyprint////////////////////
 void pressmacrokey(uint8_t key){
-if(key==MACRO2){	
-	if(keyboard_report.modifier){
-	//不能用keyboard buffer 因为buffer是记录不稳定状态
-	//report 则记录稳定状态
-		presskey(KEY_TILDE);
+	if(key==MACRO2){
+		if(keyboard_report.modifier){
+			//不能用keyboard buffer 因为buffer是记录不稳定状态
+			//report 则记录稳定状态
+			presskey(KEY_TILDE);
+		}
+		else{
+			presskey(KEY_ESC);
+		}
 	}
-	else{
-		presskey(KEY_ESC);
-	}
+	macrobuffer|=key;
 }
-macrobuffer|=key;
-}
-uint8_t usb_macro_send_required(){	
-		if (macroreport!=macrobuffer){
+uint8_t usb_macro_send_required(){
+	if (macroreport!=macrobuffer){
 		macroreport=macrobuffer;
-		return 1;}
-		return 0;
+	return 1;}
+	return 0;
 }
 //如果是函数==>void PrintFlash(void) __attribute__((section(".mysection0")));
 /*
 const uint16_t printflash[] __attribute__((section(".mysection0")))= {
-	0x000D,
-	0x007A,0x0069,0x0061,0x006E,0x005F,
-	0x006B,0x0065,0x0079,0x0062,0x006F,
-	0x0061,0x0072,0x0064,0x1212,0x1212,
-	0x1212,0x1212,0x1212,0x1212,0x1212  //zian_keyboard
+0x000D,
+0x007A,0x0069,0x0061,0x006E,0x005F,
+0x006B,0x0065,0x0079,0x0062,0x006F,
+0x0061,0x0072,0x0064,0x1212,0x1212,
+0x1212,0x1212,0x1212,0x1212,0x1212  //zian_keyboard
 };
 可以在debug-map文件里面看地址 直接记事本打开map文件 然后搜关键字printflash
 */
 const uint8_t printflash[] PROGMEM= {
-	0x0028,
-	0x007A,0x0069,0x0061,0x006E,0x005F,
-	0x006B,0x0065,0x0079,0x0062,0x006F,
-	0x0061,0x0072,0x0064,0x0012,0x0012,
-	0x0012,0x0012,0x0012,0x0012,0x0012  //zian_keyboard
-	};
-void keyPrintWordFlash(){
-	//uint8_t len=pgm_read_byte_near((uint16_t *)0x0104);
-	uint8_t len=20;
-	for(uint8_t i=0;i<len;i++){
-		//if(address>address_end)break;
-		uint8_t data = pgm_read_byte_near((uint16_t *)(0x0104+i*2+2));
-		keyPrintEnglish(data);
+	0x28,0x00,
+	0x00,0x7A,0x00,0x69,0x00,0x61,0x00,0x6E,0x00,0x5F,
+	0x00,0x6B,0x00,0x65,0x00,0x79,0x00,0x62,0x00,0x6F,
+	0x00,0x61,0x00,0x72,0x00,0x64,0xAB,0xCD,0xAB,0xCD,
+	0xAB,0xCD,0xAB,0xCD,0xAB,0xCD,0xAB,0xCD,0xAB,0xCD  //zian_keyboard
+};//不调用则不会写入数组。
+
+void keyPrintWordFlash(uint8_t debug){
+	//uint16_t len=pgm_read_word_near((uint16_t*)printflash);
+	uint16_t len=100;
+	for(uint16_t i=0;i<len;i++){
+		uint16_t address=0x3000+i*2+2;
+		if(address>address_end)break;
+		uint16_t data = pgm_read_word_near((uint16_t*)address);
+		if(debug){keyPrintDecimal(data);}
+		else {keyPrintHexadecimal(data);}
 	}
+}
+void keyPrintHexadecimal(uint16_t wrapdata){
+	usbWord_t data=(usbWord_t)wrapdata;
+	uint16_t out=(uint16_t)data.word;
+	uint8_t dataNumber[4];
+	dataNumber[3]=out&0x000F;
+	dataNumber[2]=(out>>4)&0x000F;
+	dataNumber[1]=(out>>8)&0x000F;
+	dataNumber[0]=(out>>12)&0x000F;
+	uint8_t i=0;
+	print_keyboard_report.modifier = 0;
+	for( i=0;i<4;i++){
+		if(dataNumber[i]>9){dataNumber[i]-=6;}
+		else if(dataNumber[i]>0){dataNumber[i]+=29;}
+		else{dataNumber[i]=39;}
+		print_keyboard_report.keycode[0]=dataNumber[i];
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+		print_keyboard_report.keycode[0] =0;
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+	}
+	print_keyboard_report.keycode[0] =44;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+	print_keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+}
+void keyPrintDecimal(uint16_t wrapdata){
+	usbWord_t data=(usbWord_t)wrapdata;
+	uint16_t out=(uint16_t)data.word;
+	//out|=0x8080;//汉字内码每个byte最高位为1
+	uint8_t dataNumber[5];
+	dataNumber[4]=out%10;out=out/10;
+	dataNumber[3]=out%10;out=out/10;
+	dataNumber[2]=out%10;out=out/10;
+	dataNumber[1]=out%10;out=out/10;
+	dataNumber[0]=out;
+	uint8_t i=0;
+	print_keyboard_report.modifier = 0;
+	for( i=0;i<5;i++){
+		print_keyboard_report.keycode[0]=39;
+		if(dataNumber[i]>0){print_keyboard_report.keycode[0]=dataNumber[i]+29;}
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+		print_keyboard_report.keycode[0] =0;
+		usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+	}
+	print_keyboard_report.keycode[0] =44;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+	print_keyboard_report.keycode[0] =0;
+	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
 }
 void keyPrintWordEEP(uint16_t address_t){
 	uint16_t len=eeprom_read_word((uint16_t *)address_t);

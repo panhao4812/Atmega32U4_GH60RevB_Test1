@@ -17,14 +17,14 @@ uint8_t delay_before=0;//windup
 uint8_t colPins[COLS]={16,17,18,19,20};
 uint8_t ledPins[COLS]={10,15,21,22,0};
 uint8_t rowPins[ROWS]={0xFF};
-uint8_t hexaKeys1[ROWS][COLS]={
+uint8_t hexaKeys0[ROWS][COLS]={
 	{KEY_UP,KEY_FN,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
 };
-uint8_t hexaKeys0[ROWS][COLS]={
-	{MACRO0,MACRO1,MACRO4,MACRO3,MACRO2}
+uint8_t hexaKeys1[ROWS][COLS]={
+	{MACRO0,KEY_FN,MACRO4,MACRO5,MACRO1}
 };
 uint8_t keymask[ROWS][COLS]={
-	{0x70,0x70,0x70,0x71,0x71}
+	{0x17,0x66,0x17,0x17,0x17}
 };
 
 void init_cols(){
@@ -61,7 +61,11 @@ uint8_t usb_macro_send(){
 		return 1;
 	}
 	if(macroreport&MACRO4){
-		keyPrintWordFlash();
+		keyPrintWordFlash(0);
+		return 1;
+	}
+	if(macroreport&MACRO5){
+		keyPrintWordFlash(1);
 		return 1;
 	}
 	return 0;
