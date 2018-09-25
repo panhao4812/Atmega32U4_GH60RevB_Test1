@@ -50,6 +50,7 @@ void ResetMatrixFormEEP(){
 	ResetMatrix(2,address_keymask);
 	for( j=0;j<(WS2812_COUNT * 3);j++){WS2812fix[j]=eeprom_read_byte((uint8_t *)(j+addRGB));}
 	RGB_Type=eeprom_read_byte((uint8_t *)addPrint);
+	RGB_Type&=0x11;
 }
 void eepwrite(){
 	//	address,word1,word2,word3
