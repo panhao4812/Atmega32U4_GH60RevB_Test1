@@ -48,7 +48,8 @@ void init_cols();
 void init_rows();
 
 void pokerMode();
-void XDMode();
+void XD60Mode();
+void XD75Mode();
 void eepwrite();
 void ResetMatrixFormEEP();
 uint8_t IsBufferClear();

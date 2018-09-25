@@ -8,9 +8,9 @@ main.c
 
 Matrix\Matrix_CNY.c
 
-Matrix\Matrix_XD60.c
+Matrix\Matrix_XD60_V3.c
 
-Matrix\Satan.c
+Matrix\Matric_XD75.c
 
 usb_keyboard.c
 

@@ -11,7 +11,7 @@
 //////////////////////////////////////////////////////
 //#define  xd60
 //#define CNY
-#define  satan
+#define  xd75
 #if defined(xd60)
 #define ROWS  5
 #define COLS  14
@@ -24,11 +24,11 @@
 #define VENDOR_ID		0x32C4//0x16C0
 #define PRODUCT_ID		0x0260//0x047C
 #define WS2812_COUNT	6
-#elif defined(satan)
+#elif defined(xd75)
 #define ROWS  5
-#define COLS  14
+#define COLS  15
 #define VENDOR_ID		0x32C4//0x16C0
-#define PRODUCT_ID		0x0360//0x047C
+#define PRODUCT_ID		0x0375//0x047C
 #define WS2812_COUNT	6
 #else
 #define ROWS  5

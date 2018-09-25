@@ -38,11 +38,14 @@
 ///////////////////////////////////////////////
 #if defined(__AVR_ATmega32U2__)
 #define VENDOR_ID		0x32C2//–æ∆¨¿‡–Õ
-#define maxEEP (uint16_t)0x03FF // (eeprom 1k-1)
-#define address_start (uint16_t)0x3000 // 12k+1
-#define address_end (uint16_t)0x6FF0 // 0x3800-1
+#define address_start (uint16_t)0x3000 // 12k
+#define address_end (uint16_t)0x7000 // 0x3800*2
+#define maxEEP (uint16_t)0x01FF // (eeprom 1k-1)
 #elif defined(__AVR_ATmega16U2__)
 #define VENDOR_ID		0x16C2
+#define address_start (uint16_t)0x3000 // 12k
+#define address_end (uint16_t)0x3000 // 0x1800*2
+#define maxEEP (uint16_t)0x03FF // (eeprom 1k-1)
 #elif defined(__AVR_ATmega8U2__)
 #define VENDOR_ID		0x08C2
 #elif defined(__AVR_AT90USB162__)
