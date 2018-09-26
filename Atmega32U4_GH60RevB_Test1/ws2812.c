@@ -101,7 +101,17 @@ void WS2812Send()
 	}
 	sei();
 }
-
+void WS2812Send2()
+{
+	cli();
+	uint8_t masklo = ~(WS2812_MASK) & WS2812_PORT;
+	uint8_t maskhi = WS2812_MASK | WS2812_PORT;
+	for(uint16_t c = 0; c < (WS2812_COUNT * 3); c++)
+	{
+		ledcontrol_led_sendbyte(WS2812Buffer[c], masklo, maskhi);
+	}
+	sei();
+}
 const  uint8_t Rcolors [WS2812ColorCount] PROGMEM=
 {
 	243,243,243,243,243,243,243,243,243,242,242,242,242,242,242,242,241,241,241,241,241,240,240,240,240,

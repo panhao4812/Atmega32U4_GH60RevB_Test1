@@ -9,9 +9,9 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-//#define  xd60
+#define  xd60
 //#define CNY
-#define  xd75
+//#define  xd75
 #if defined(xd60)
 #define ROWS  5
 #define COLS  14

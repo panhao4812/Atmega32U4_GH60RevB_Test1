@@ -37,12 +37,12 @@ extern  uint8_t colPins[COLS];
 #define _delay_after 0x08
 #define _delay_before 0x03
 #define add1 10
-#define add2 add1+ROWS //15
-#define add3 add2+COLS //30
-#define add4 add3+(ROWS*COLS) //30+15*5=105
-#define add5 add4+(ROWS*COLS) //105+75=180
-#define addRGB add5+(ROWS*COLS) //180+75=255
-#define addPrint addRGB+(WS2812_COUNT*3) //255+12*3=291
+#define add2 add1+ROWS //15 15
+#define add3 add2+COLS //30 29
+#define add4 add3+(ROWS*COLS) //30+15*5=105 99
+#define add5 add4+(ROWS*COLS) //105+75=180 169
+#define addRGB add5+(ROWS*COLS) //180+75=255 239
+#define addPrint addRGB+(WS2812_COUNT*3) //255+6*3=273 275
 int init_main(void);
 void init_cols();
 void init_rows();

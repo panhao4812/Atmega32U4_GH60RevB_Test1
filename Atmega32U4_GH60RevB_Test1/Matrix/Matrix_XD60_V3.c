@@ -13,7 +13,7 @@ uint8_t colPins[COLS]={21,20,24,10,9,15,22,1,4,14,13,12,11,3};
 //                     1  2  3  4  5  6  7 8 9 10 11 12 13 14
 #define ledcaps 2
 #define fullled 18
-uint16_t cindex[WS2812_COUNT]={0,34,68,102,136,170};
+uint16_t cindex[WS2812_COUNT]={0,34,68,102,136,170,170,136,102,68,34,0};
 uint16_t delayval;
 uint8_t r,c,i;
 uint8_t delay_after=0;
@@ -69,7 +69,7 @@ void init_LED(){
 	ledmacro=0;if((RGB_Type&0xF0)==0x10)ledmacro=0x02;
 	WS2812Setup();delayval=Maxdelay;
 	WS2812Clear();
-	WS2812Send();
+	WS2812Send2();
 }
 void LED(){
 	if((keyboard_buffer.keyboard_leds&(1<<1))==(1<<1)){
@@ -94,7 +94,7 @@ void LED(){
 			}
 			}else{WS2812Clear();}
 		delayval--;
-		WS2812Send();
+		WS2812Send2();
 		}else{
 		if(delayval){delayval--;}
 		else {delayval=Maxdelay;}
@@ -102,6 +102,10 @@ void LED(){
 }
 uint8_t usb_macro_send(){
 	ledmacro^=macroreport;
+	if(macroreport&MACRO3){
+		keyPrintWordEEP(addPrint+6);
+		return 1;
+	}
 	return 0;
 }
 /////////////////////////////////////////////////////////////////////
@@ -187,6 +191,7 @@ int init_main(void) {
 		init_LED();
 		EnableRecv=1;
 		keyboard_buffer.enable_pressing=1;
+		RGB_Type=0x11;///set default on & rainbow
 		ResetMatrixFormEEP();
 		_delay_ms(500);
 		releaseAllkeyboardkeys();
