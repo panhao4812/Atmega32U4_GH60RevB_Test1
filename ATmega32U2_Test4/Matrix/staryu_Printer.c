@@ -1,5 +1,5 @@
-#include "functions.h"
-#include "ws2812.h"
+#include "../functions.h"
+#include "../ws2812.h"
 
 /////////////////////////Test4////////////////////////////////
 //use flash instead of eeprom to save data
