@@ -48,9 +48,9 @@ int init_main(void);
 void init_cols();
 void init_rows();
 
-void pokerMode();
+void StaryuMode();
 void XDMode();
-void BfaceMode();
+void xd004Mode();
 void eepwrite();
 void ResetMatrixFormEEP();
 

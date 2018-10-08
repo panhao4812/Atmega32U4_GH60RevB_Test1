@@ -4,32 +4,33 @@
 /////////////////////////Test4////////////////////////////////
 //use flash instead of eeprom to save data
 ///////////////////////////////////////////////////////////////
-#ifdef staryu
+#ifdef xd004
 uint8_t i,FN;
 uint8_t ledmacro=0;//¼ÇÂ¼led×´Ì¬
 uint16_t delayval;//rgbËÙÂÊ
 uint8_t r,c;
 uint8_t delay_after=0;//backswing
 uint8_t delay_before=0;//windup
-//SW D0 D1 D2 D3 D4
-//LED C2 C7 D5 D6 B0
+//SW d3 d0 c4 b4
+//LED d5 d2 b7 b5
 //RGB C6
-uint8_t colPins[COLS]={16,17,18,19,20};
-uint8_t ledPins[COLS]={10,15,21,22,0};
+uint8_t colPins[COLS]={19,16,12,4};
+uint8_t ledPins[COLS]={21,18,7,5};
 uint8_t rowPins[ROWS]={0xFF};
 uint8_t hexaKeys0[ROWS][COLS]={
-	{KEY_UP,KEY_FN,KEY_RIGHT,KEY_DOWN,KEY_LEFT}
+	{KEY_1,KEY_2,KEY_3,KEY_FN}
 };
 uint8_t hexaKeys1[ROWS][COLS]={
-	{MACRO0,KEY_FN,MACRO4,MACRO5,MACRO1}
+	{MACRO0,MACRO1,MACRO2,KEY_FN}
 };
 uint8_t keymask[ROWS][COLS]={
-	{0x17,0x66,0x17,0x17,0x17}
+	{0x17,0x17,0x17,0x66}
 };
-
 void init_cols(){
-	DDRD &=~0x1F;
-	PORTD|= 0x1F;
+	for ( i=0; i<COLS; i++){
+		pinMode(colPins[i],INPUT);
+		digitalWrite(colPins[i],HIGH);
+	}
 }
 void init_rows(){
 }
@@ -60,17 +61,21 @@ uint8_t usb_macro_send(){
 		keyPrintWordEEP(addPrint+6);
 		return 1;
 	}
-	if(macroreport&MACRO4){
+	if(macroreport&MACRO5){
 		keyPrintWordDebug(0);
 		return 1;
 	}
-	if(macroreport&MACRO5){
+	if(macroreport&MACRO6){
+		keyPrintWordDebug(1);
+		return 1;
+	}
+	if(macroreport&MACRO7){
 		keyPrintWordDebug(1);
 		return 1;
 	}
 	return 0;
 }
-uint16_t cindex[WS2812_COUNT]={0};
+uint16_t cindex[WS2812_COUNT]={0,0};
 void LED(){
 	//////////////////////////////FULL LRF/////////////////////
 	if((ledmacro & (1<<0))==0){Close_LED();}else{ Open_LED();}
@@ -95,7 +100,7 @@ void LED(){
 			WS2812Send2();
 			}else{if(delayval){delayval--;}else {delayval=Maxdelay;}}
 		}
-		void StaryuMode(){
+		void xd004Mode(){
 			for (r = 0; r < ROWS; r++) {
 				for (c = 0; c < COLS; c++) {
 					if (digitalRead(colPins[c])) {keymask[r][c]&= ~0x88;}
@@ -187,7 +192,7 @@ void LED(){
 						break;
 					}
 					else if(keyboard_buffer.enable_pressing==1){
-						StaryuMode();
+						xd004Mode();
 						LED();
 					}
 				}

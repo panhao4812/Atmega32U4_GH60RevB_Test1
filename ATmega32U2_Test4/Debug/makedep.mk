@@ -6,6 +6,8 @@ Functions.c
 
 main.c
 
+Matrix\xd004.c
+
 Matrix\staryu_Printer.c
 
 usb_keyboard.c

@@ -314,7 +314,7 @@ const uint16_t printflash[] __attribute__((section(".mysection0")))= {0x000D,0x0
 不调用则不会写入数组。
 可以在debug-map文件里面看地址 直接记事本打开map文件 然后搜关键字printflash
 */
-void keyPrintWordFlash(uint8_t debug){
+void keyPrintWordDebug(uint8_t debug){
 	//uint16_t len=pgm_read_word_near((uint16_t*)printflash);
 	uint16_t len=100;
 	for(uint16_t i=0;i<len;i++){
@@ -324,6 +324,64 @@ void keyPrintWordFlash(uint8_t debug){
 		if(debug){keyPrintDecimal(data);}
 		else {keyPrintHexadecimal(data);}
 	}
+}
+void keyPrintWordFlash(uint16_t address_t){
+    uint16_t len=pgm_read_word_near((uint16_t *)address_t);
+	if(len<1)return;
+	for(uint16_t i=0;i<len;i++){
+		uint16_t address=address_t+i*2+2;
+		if(address>address_end)break;
+		uint16_t data = pgm_read_word_near((uint16_t*)address);
+		keyPrintChar(data);
+	}
+}
+void keyPrintWordEEP(uint16_t address_t){
+	uint16_t len=eeprom_read_word((uint16_t *)address_t);
+	if(len<1)return;
+	for(uint16_t i=0;i<len;i++){
+		uint16_t address=address_t+i*2+2;
+		if(address>maxEEP)break;
+		uint16_t data = eeprom_read_word((uint16_t *)address);
+		keyPrintChar(data);
+	}
+}
+void keyPrintMacroFlash(uint16_t address_t){
+	uint16_t len=eeprom_read_word((uint16_t *)address_t);
+	if(len<1)return;
+	for(uint16_t i=0;i<len;i++){
+		uint16_t address=address_t+i*4+2;
+		if(address>address_end)break;
+		uint16_t data1 = pgm_read_word_near((uint16_t*)address);
+		uint16_t data2 = pgm_read_word_near((uint16_t*)address+2);
+		keyPrintMacro(data1,data2);
+	}
+}
+void keyPrintMacro(uint16_t data4,uint16_t data5){
+//0x10+modify key1 key2 interval
+//0x20+mouse_keys x y interval
+uint8_t data0=data4&0x00FF;
+uint8_t data1=(data4>>4)&0x00FF;
+uint8_t data2=data5&0x00FF;
+uint8_t data3=(data5>>4)&0x00FF;
+uint8_t sign=data0&0xF0;
+if(sign==0x10){
+memset(print_keyboard_report.keycode,0,6);
+print_keyboard_report.modifier = data0&0x0F;
+print_keyboard_report.keycode[0] =data1;
+print_keyboard_report.keycode[0] =data2;
+usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
+}
+if(sign==0x20){
+mouse_report.mouse.buttons=data0&0x0F;
+mouse_buffer.Send_Required=REPORT_ID_MOUSE;
+mouse_report.mouse.x=data1;
+mouse_report.mouse.y=data2;
+usb_mouse_send();
+}
+if(data3==0)return;
+for(uint8_t i=0;i<data3;i++){
+_delay_ms(10);
+}
 }
 void keyPrintHexadecimal(uint16_t wrapdata){
 	usbWord_t data=(usbWord_t)wrapdata;
@@ -372,15 +430,6 @@ void keyPrintDecimal(uint16_t wrapdata){
 	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
 	print_keyboard_report.keycode[0] =0;
 	usb_send(KEYBOARD_ENDPOINT,(uint8_t *)&print_keyboard_report,8,50);
-}
-void keyPrintWordEEP(uint16_t address_t){
-	uint16_t len=eeprom_read_word((uint16_t *)address_t);
-	for(uint16_t i=0;i<len;i++){
-		uint16_t address=address_t+i*2+2;
-		if(address>maxEEP)break;
-		uint16_t data = eeprom_read_word((uint16_t *)address);
-		keyPrintChar(data);
-	}
 }
 void keyPrintChinese(uint8_t data[5]){
 	memset(print_keyboard_report.keycode,0,6);

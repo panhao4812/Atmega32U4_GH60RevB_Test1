@@ -9,20 +9,30 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-#define  staryu
-
-#ifdef staryu
+//#define  staryu
+#define  xd004
+#if defined(staryu)
 #define WS2812_COUNT	1
 #define WS2812_PORT		PORTC
 #define WS2812_DDR		DDRC
 #define WS2812_MASK		(1<<6)
 #define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
 #define Maxdelay 0x0200
-///////////ws2812/////////////////
 #define ROWS  1
 #define COLS  5
 #define PRODUCT_ID		0x0105
-//±‡∫≈+º¸ ˝£®40=>40,60=>60,84=>84,87=>87,108=>A8£©
+#define address_start (uint16_t)0x3000 // at 12k for debug
+#elif defined(xd004)
+#define WS2812_COUNT	2
+#define WS2812_PORT		PORTC
+#define WS2812_DDR		DDRC
+#define WS2812_MASK		(1<<6)
+#define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
+#define Maxdelay 0x0200
+#define ROWS  1
+#define COLS  4
+#define PRODUCT_ID		0x0104
+#define address_start (uint16_t)0x2B00 // for debug
 #else
 #define WS2812_COUNT	1
 #define WS2812_PORT		PORTC
@@ -30,20 +40,18 @@
 #define WS2812_MASK		(1<<6)
 #define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
 #define Maxdelay 0x0200
-/////////////ws2812///////////////
 #define ROWS  5
 #define COLS  14
 #define PRODUCT_ID		0x0001
+//±‡∫≈+º¸ ˝£®40=>40,60=>60,84=>84,87=>87,108=>A8£©
 #endif
 ///////////////////////////////////////////////
 #if defined(__AVR_ATmega32U2__)
 #define VENDOR_ID		0x32C2//–æ∆¨¿‡–Õ
-#define address_start (uint16_t)0x3000 // 12k
 #define address_end (uint16_t)0x7000 // 0x3800*2
 #define maxEEP (uint16_t)0x01FF // (eeprom 1k-1)
 #elif defined(__AVR_ATmega16U2__)
 #define VENDOR_ID		0x16C2
-#define address_start (uint16_t)0x3000 // 12k
 #define address_end (uint16_t)0x3000 // 0x1800*2
 #define maxEEP (uint16_t)0x03FF // (eeprom 1k-1)
 #elif defined(__AVR_ATmega8U2__)
@@ -110,8 +118,11 @@ uint8_t usb_mouse_send();
 uint8_t usb_recv(uint8_t endpoint,uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint8_t timeout);
 void EVENT_USB_Device_StartOfFrame();
-void keyPrintWordFlash(uint8_t debug);
-void keyPrintWordEEP(uint16_t address);
+void keyPrintWordDebug(uint8_t debug);
+void keyPrintWordFlash(uint16_t address_t);
+void keyPrintWordEEP(uint16_t address_t);
+void keyPrintMacroFlash(uint16_t address_t);
+void keyPrintMacro(uint16_t data4,uint16_t data5);
 void keyPrintChinese(uint8_t data[5]);
 void keyPrintEnglish(uint8_t data);
 void keyPrintChar(uint16_t wrapdata);
