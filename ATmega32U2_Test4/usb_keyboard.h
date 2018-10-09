@@ -31,7 +31,7 @@
 #define Maxdelay 0x0200
 #define ROWS  1
 #define COLS  4
-#define PRODUCT_ID		0x0104
+#define PRODUCT_ID		0x0204
 #define address_start (uint16_t)0x2B00 // for debug
 #else
 #define WS2812_COUNT	1

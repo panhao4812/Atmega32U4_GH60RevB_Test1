@@ -61,6 +61,7 @@ uint8_t usb_macro_send(){
 		keyPrintWordEEP(addPrint+6);
 		return 1;
 	}
+	/*
 	if(macroreport&MACRO5){
 		keyPrintWordDebug(0);
 		return 1;
@@ -73,6 +74,7 @@ uint8_t usb_macro_send(){
 		keyPrintWordDebug(1);
 		return 1;
 	}
+	*/
 	return 0;
 }
 uint16_t cindex[WS2812_COUNT]={0,0};
