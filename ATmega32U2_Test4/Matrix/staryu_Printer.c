@@ -61,11 +61,7 @@ uint8_t usb_macro_send(){
 		return 1;
 	}
 	if(macroreport&MACRO4){
-		keyPrintWordDebug(0);
-		return 1;
-	}
-	if(macroreport&MACRO5){
-		keyPrintWordDebug(1);
+		keyPrintWordFlash(0x2200);
 		return 1;
 	}
 	return 0;

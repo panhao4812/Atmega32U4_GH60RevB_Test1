@@ -9,8 +9,8 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-//#define  staryu
-#define  xd004
+#define  staryu
+//#define  xd004
 #if defined(staryu)
 #define WS2812_COUNT	1
 #define WS2812_PORT		PORTC
