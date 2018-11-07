@@ -325,6 +325,9 @@ void keyPrintWordDebug(uint8_t debug){
 		else {keyPrintHexadecimal(data);}
 	}
 }
+void keyPrintWordFlash2(){
+	keyPrintWordFlash(address_start);
+}
 void keyPrintWordFlash(uint16_t address_t){
     uint16_t len=pgm_read_word_near((uint16_t *)address_t);
 	if(len<1)return;

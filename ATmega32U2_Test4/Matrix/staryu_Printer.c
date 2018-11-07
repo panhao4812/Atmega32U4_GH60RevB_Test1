@@ -60,7 +60,7 @@ uint8_t usb_macro_send(){
 		keyPrintWordEEP(addPrint+6);
 		return 1;
 	}
-	if(macroreport&MACRO4){
+	else if(macroreport&MACRO4){
 		keyPrintWordFlash(0x2200);
 		return 1;
 	}

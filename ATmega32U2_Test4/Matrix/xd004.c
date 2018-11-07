@@ -21,7 +21,7 @@ uint8_t hexaKeys0[ROWS][COLS]={
 	{KEY_1,KEY_2,KEY_3,KEY_FN}
 };
 uint8_t hexaKeys1[ROWS][COLS]={
-	{MACRO0,MACRO1,MACRO2,KEY_FN}
+	{MACRO0,MACRO1,MACRO3,KEY_FN}
 };
 uint8_t keymask[ROWS][COLS]={
 	{0x17,0x17,0x17,0x66}
@@ -60,21 +60,20 @@ uint8_t usb_macro_send(){
 	if(macroreport&MACRO3){
 		keyPrintWordEEP(addPrint+6);
 		return 1;
+	}	
+	else if(macroreport&MACRO4){
+		keyPrintWordFlash2();
+		return 1;
 	}
-	/*
-	if(macroreport&MACRO5){
+	else if(macroreport&MACRO5){
 		keyPrintWordDebug(0);
 		return 1;
 	}
-	if(macroreport&MACRO6){
+	else if(macroreport&MACRO6){
 		keyPrintWordDebug(1);
 		return 1;
 	}
-	if(macroreport&MACRO7){
-		keyPrintWordDebug(1);
-		return 1;
-	}
-	*/
+	
 	return 0;
 }
 uint16_t cindex[WS2812_COUNT]={0,0};

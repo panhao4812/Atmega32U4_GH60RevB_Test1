@@ -9,8 +9,8 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 //////////////////////////////////////////////////////
-#define  staryu
-//#define  xd004
+//#define  staryu
+#define  xd004
 #if defined(staryu)
 #define WS2812_COUNT	1
 #define WS2812_PORT		PORTC
@@ -28,11 +28,11 @@
 #define WS2812_DDR		DDRC
 #define WS2812_MASK		(1<<6)
 #define WS2812_SAVE		1			/*Power saver, divide light level with this.*/
-#define Maxdelay 0x0200
+#define Maxdelay 0x0400
 #define ROWS  1
 #define COLS  4
 #define PRODUCT_ID		0x0204
-#define address_start (uint16_t)0x2B00 // for debug
+#define address_start (uint16_t)0x2400 // for debug
 #else
 #define WS2812_COUNT	1
 #define WS2812_PORT		PORTC
@@ -120,6 +120,7 @@ uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint
 void EVENT_USB_Device_StartOfFrame();
 void keyPrintWordDebug(uint8_t debug);
 void keyPrintWordFlash(uint16_t address_t);
+void keyPrintWordFlash2();
 void keyPrintWordEEP(uint16_t address_t);
 void keyPrintMacroFlash(uint16_t address_t);
 void keyPrintMacro(uint16_t data4,uint16_t data5);
