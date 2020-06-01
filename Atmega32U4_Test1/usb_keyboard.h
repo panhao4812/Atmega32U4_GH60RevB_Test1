@@ -321,13 +321,13 @@ uint8_t usb_macro_send();
 #define TRANSPORT_EJECT         0xB8
 #define TRANSPORT_STOP_EJECT    0xCC
 #define TRANSPORT_PLAY_PAUSE    0xCD
-//application launch 
+//application launch
 #define AL_CC_CONFIG           0x83// 0x0183
 #define AL_EMAIL               0x8A// 0x018A
 #define AL_CALCULATOR          0x92// 0x0192
 #define AL_LOCAL_BROWSER       0x94// 0x0194
 #define AL_LOCK                0x9E// 0x019E
-//application control 
+//application control
 #define AC_SEARCH              0x21// 0x0221
 #define AC_HOME                0x23// 0x0223
 #define AC_BACK                0x24// 0x0224
@@ -336,7 +336,7 @@ uint8_t usb_macro_send();
 #define AC_REFRESH             0x27// 0x0227
 #define AC_BOOKMARKS           0x2A// 0x022A
 #define AC_MINIMIZE            0x06// 0x0206
-//supplement for Bluegiga iWRAP HID(not supported by Windows?) 
+//supplement for Bluegiga iWRAP HID(not supported by Windows?)
 
 // Everything below this point is only intended for usb_serial.c
 // Misc functions to wait for ready and send/receive packets
@@ -399,6 +399,59 @@ return false;
 }
 }
 */
+/*
+UDCON寄存器 见手册22.18.1 - - - - RSTCPU LSM RMWKUP DETACH
+*RSTCPU：USB Reset CPU bit
+*LSM：全速和高速切换
+*RMWKUP：remote wake-up
+*DETACH ：控制D+ D-电流的开关总闸
+*/
+/*
+UDIEN寄存器 - UPRSME EORSME WAKEUPE EORSTE SOFE - SUSPE 能使
+*UPRSME UPRSMI中断 Up stream Resume
+*EORSME EORSMI中断 End Of Resume
+*WAKEUPE WAKEUPI中断 Wake-up CPU
+*EORSTE EORSTI中断 End Of Reset
+*SOFE SOFI中断 Start Of Frame
+*SUSPE SUSPI中断 Suspend
+
+UDINT寄存器 - UPRSMI EORSMI WAKEUPI EORSTI SOFI - SUSPI 判断flag
+*/
+static inline void UpStreamResume(void)
+{
+	UDIEN = (1<<UPRSME);
+}
+static inline void EndOfResume(void)
+{
+	UDIEN = (1<<EORSMI);
+}
+static inline void WakeUpCPU(void)
+{
+	UDIEN = (1<<WAKEUPE);
+}
+static inline void EndOfReset(void)
+{
+	UDIEN = (1<<EORSTE);
+}
+static inline void StartOfFrame(void)
+{
+	UDIEN = (1<<SOFE);
+}
+
+/*
+UEINTX寄存器 FIFOCON NAKINI RWAL NAKOUTI RXSTPI RXOUTI STALLEDI TXINI
+*FIFOCON  FIFO Control Bit
+*NAKINI NAK IN Received Interrupt Flag
+*RWAL Read/Write Allowed Flag
+*NAKOUTI NAK OUT Received Interrupt Flag
+*RXSTPI Received SETUP Interrupt Flag
+*RXOUTI Received OUT Data Interrupt Flag
+*STALLEDI Set by hardware to signal that a STALL handshake has been sent, or that a CRC error has been detected in a
+OUT isochronous endpoint
+*TXINI Transmitter Ready Interrupt Flag
+
+UEIENX寄存器 FLERRE NAKINE - NAKOUTE RXSTPE RXOUTE STALLEDE TXINE 能使
+*/
 static inline void WaitIN(void)
 {
 	while (!(UEINTX & (1<<TXINI)));
@@ -420,23 +473,6 @@ static inline void ClearOUT(void)
 {
 	UEINTX = ~(1<<RXOUTI);
 }
-
-static inline uint8_t Recv8()
-{
-	return UEDATX;
-}
-static inline void Send8(uint8_t d)
-{
-	UEDATX = d;
-}
-static inline void SetEP(uint8_t ep)
-{
-	UENUM = ep;
-}
-static inline uint8_t FifoByteCount()
-{
-	return UEBCLX;
-}
 static inline uint8_t ReceivedSetupInt()
 {
 	return UEINTX & (1<<RXSTPI);
@@ -444,10 +480,6 @@ static inline uint8_t ReceivedSetupInt()
 static inline void ClearSetupInt()
 {
 	UEINTX = ~((1<<RXSTPI) | (1<<RXOUTI) | (1<<TXINI));
-}
-static inline void Stall()
-{
-	UECONX = (1<<STALLRQ) | (1<<EPEN);
 }
 static inline uint8_t ReadWriteAllowed()
 {
@@ -463,15 +495,59 @@ static inline uint8_t FifoFree()
 }
 static inline void ReleaseRX()
 {
-	UEINTX = 0x6B;	// FIFOCON=0 NAKINI=1 RWAL=1 NAKOUTI=0 RXSTPI=1 RXOUTI=0 STALLEDI=1 TXINI=1
+	UEINTX =((1<<NAKINI) | (1<<RWAL) | (1<<RXSTPI)| (1<<STALLEDI)| (1<<TXINI));// 0x6B;
 }
 static inline void ReleaseTX()
 {
-	UEINTX = 0x3A;	// FIFOCON=0 NAKINI=0 RWAL=1 NAKOUTI=1 RXSTPI=1 RXOUTI=0 STALLEDI=1 TXINI=0
+	UEINTX = ((1<<RWAL) | (1<<NAKOUTI) | (1<<RXSTPI)| (1<<STALLEDI));//0x3A;// 
+}
+
+/*
+UEDATX寄存器
+Set by the software to read/write a byte from/to the endpoint FIFO selected by EPNUM
+
+UECONX寄存器 - - STALLRQ STALLRQC RSTDT - - EPEN
+*STALLRQ STALL Request Handshake Bit 停止握手包
+*STALLRQC STALL Request Clear Handshake Bit
+*RSTDT  Reset Data Toggle Bit
+*EPEN Endpoint Enable Bit
+
+UECFG0X寄存器 EPTYPE1:0 - - - - - EPDIR
+*EPTYPE Endpoint Type  0：bulk 1：interrupt
+*EPDIR Endpoint Direction  1：in 0：out
+
+UECFG1X寄存器 - EPSIZE2:0 EPBK1:0 ALLOC -
+*EPBK   Endpoint Bank 
+*ALLOC allocate the endpoint memory 分配存储空间
+*/
+static inline uint8_t Recv8()
+{
+	return UEDATX;
+}
+static inline void Send8(uint8_t d)
+{
+	UEDATX = d;
+}
+static inline void Stall()
+{
+	UECONX = (1<<STALLRQ) | (1<<EPEN);
+}
+static inline void SetEP(uint8_t ep)
+{
+	UENUM = ep;
+}
+static inline uint8_t FifoByteCount()
+{
+	return UEBCLX;
+	//This field is the MSB of the byte count of the FIFO endpoint
 }
 static inline uint8_t FrameNumber()
 {
 	return UDFNUML;
+	//These bits are the 8 LSB of the 11-bits Frame Number information
+}
+static inline void EnableEndpoint(){
+	UECONX = 1;
 }
 ////////////////////////////////////////
 #define USB_INT_WAKEUPI  2
@@ -500,8 +576,7 @@ static inline uint8_t FrameNumber()
 ((s) == 32 ? 0x20 :	\
 ((s) == 16 ? 0x10 :	\
 0x00)))
-//size只能为8 16 32 64 128 256 512
-
+//size只能为8 16 32 64 
 
 #define LSB(n) (n & 255)
 #define MSB(n) ((n >> 8) & 255)
@@ -514,7 +589,25 @@ static inline uint8_t FrameNumber()
 #   define UERST_MASK       0x7E
 //0b 01111110 UERST是代表ep是否重置，0-6位分别表示ep0-6 第7位锁死为0 1代表重置，0代表不重置
 #endif
+/*
+UHWCON寄存器 见手册21.13.1  - - - - - - - UVREGE
+*UVREGE：USB pad 寄存器开关
 
+USBCON寄存器 见手册21.13.1 USBE - FRZCLK OTGPADE - - - VBUSTE
+*USBE  能使 USB controller
+*FRZCLK 能使 clock inputs
+*OTGPADE 是否由vbus供电
+*VBUSTE 能使 VBUS Transition interrupt generation
+
+PLLCSR寄存器 见手册6.11.5 - - - PINDIV - - PLLE PLOCK
+*PINDIV 区分8M和16M输入
+*PLLE 启动倍频 到48M
+*PLOCK 倍频是否启动完成
+*/
+static inline uint8_t PLL_configured()
+{
+	return (PLLCSR & (1<<PLOCK));
+}
 #if defined(__AVR_AT90USB162__)
 #define HW_CONFIG()
 #define PLL_CONFIG() (PLLCSR = ((1<<PLLE)|(1<<PLLP0)))

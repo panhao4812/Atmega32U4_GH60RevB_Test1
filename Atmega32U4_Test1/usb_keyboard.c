@@ -281,11 +281,12 @@ void usb_init(void)
 	HW_CONFIG();
 	USB_FREEZE();	// enable USB
 	PLL_CONFIG();				// config PLL
-	while (!(PLLCSR & (1<<PLOCK))) ;	// wait for PLL lock
+	while (PLL_configured()!=0);	// wait for PLL lock
 	USB_CONFIG();				// start USB clock
 	UDCON = 0;				// enable attach resistor
 	usb_configuration = 0;
-	UDIEN = (1<<EORSTE)|(1<<SOFE);
+	EndOfReset();
+	StartOfFrame();
 	sei();
 	ClearKeyboard();
 	ClearMouse();
@@ -331,13 +332,13 @@ uint8_t usb_send(uint8_t endpoint,const uint8_t *buffer, uint8_t buffersize,uint
 {
 	uint8_t intr_state;
 	if (!usb_configuration) return 1;
-	intr_state = SREG;
-	cli();
+	intr_state = SREG;//保持全局寄存器的值
+	cli();//关中断
 	timeout = FrameNumber() + timeout;
 	SetEP(endpoint);
 	while (1) {
 		if (ReadWriteAllowed()) break;
-		SREG = intr_state;
+		SREG = intr_state;//恢复全局寄存器的值
 		if (!usb_configuration) return 1;
 		if (FrameNumber() == timeout) return 1;
 		intr_state = SREG;
@@ -374,12 +375,12 @@ ISR(USB_GEN_vect)
 	static uint8_t div4=0;
 	intbits = UDINT;
 	UDINT = 0;
-	if (intbits & (1<<EORSTI)) {
+	if (intbits & (1<<EORSTI)) { //if end of reset
 		SetEP(0);
-		UECONX = 1;
+		EnableEndpoint();
 		UECFG0X = EP_TYPE_CONTROL;
 		UECFG1X = EP_SIZE(ENDPOINT0_SIZE) | EP_SINGLE_BUFFER;
-		UEIENX = (1<<RXSTPE);
+		UEIENX = (1<<RXSTPE); // enable Received SETUP Interrupt
 		usb_configuration = 0;
 	}
 	//////////////////////////////////////////
