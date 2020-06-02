@@ -438,6 +438,7 @@ ISR(USB_COM_vect)
 	const uint8_t *cfg;
 	const uint8_t *desc_addr;
 	uint8_t i, n, len, en;
+	//已完成总复位 通过ep0进行枚举
 	SetEP(0);
 	if (ReceivedSetupInt()) {
 		bmRequestType = UEDATX;

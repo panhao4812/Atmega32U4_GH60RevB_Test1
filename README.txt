@@ -1,4 +1,4 @@
-﻿Atmega32U4_GH60
+Atmega32U4_GH60
 
 精简版固件 
 特殊换层模式
@@ -92,3 +92,181 @@ private void RunScript(List<Color> x, object y, ref object A, ref object B, ref 
     B = Green;
     C = Blue;
   }
+
+参考usbpcap
+数据头USB URP 28长度
+
+Host： GET DESCRIPTOR Request DEVICE
+Setup Data
+    bmRequestType: 0x80
+        1... .... = Direction: Device-to-host
+        .00. .... = Type: Standard (0x0)
+        ...0 0000 = Recipient: Device (0x00)
+    bRequest: GET DESCRIPTOR (6)
+    Descriptor Index: 0x00
+    bDescriptorType: DEVICE (0x01)
+    Language Id: no language specified (0x0000)
+wLength: 18
+
+Dvice： GET DESCRIPTOR Response DEVICE
+DEVICE DESCRIPTOR
+    bLength: 18
+    bDescriptorType: 0x01 (DEVICE)
+    bcdUSB: 0x0200
+    bDeviceClass: Device (0x00)
+    bDeviceSubClass: 0
+    bDeviceProtocol: 0 (Use class code info from Interface Descriptors)
+    bMaxPacketSize0: 8
+    idVendor: Razer USA, Ltd (0x1532)
+    idProduct: RZ01-0036 Optical Gaming Mouse [Abyssus] (0x001c)
+    bcdDevice: 0x0100
+    iManufacturer: 1
+    iProduct: 2
+    iSerialNumber: 0
+bNumConfigurations: 1
+
+GET DESCRIPTOR Request CONFIGURATION
+Setup Data
+    bmRequestType: 0x80
+        1... .... = Direction: Device-to-host
+        .00. .... = Type: Standard (0x0)
+        ...0 0000 = Recipient: Device (0x00)
+    bRequest: GET DESCRIPTOR (6)
+    Descriptor Index: 0x00
+    bDescriptorType: CONFIGURATION (0x02)
+    Language Id: no language specified (0x0000)
+    wLength: 9
+
+GET DESCRIPTOR Response CONFIGURATION
+CONFIGURATION DESCRIPTOR
+    bLength: 9
+    bDescriptorType: 0x02 (CONFIGURATION)
+    wTotalLength: 34
+    bNumInterfaces: 1
+    bConfigurationValue: 1
+    iConfiguration: 0
+    Configuration bmAttributes: 0xa0  NOT SELF-POWERED  REMOTE-WAKEUP
+bMaxPower: 50  (100mA)
+
+GET DESCRIPTOR Request CONFIGURATION
+Setup Data
+    bmRequestType: 0x80
+        1... .... = Direction: Device-to-host
+        .00. .... = Type: Standard (0x0)
+        ...0 0000 = Recipient: Device (0x00)
+    bRequest: GET DESCRIPTOR (6)
+    Descriptor Index: 0x00
+    bDescriptorType: CONFIGURATION (0x02)
+    Language Id: no language specified (0x0000)
+    wLength: 34
+
+GET DESCRIPTOR Response CONFIGURATION
+CONFIGURATION DESCRIPTOR
+    bLength: 9
+    bDescriptorType: 0x02 (CONFIGURATION)
+    wTotalLength: 34
+    bNumInterfaces: 1
+    bConfigurationValue: 1
+    iConfiguration: 0
+    Configuration bmAttributes: 0xa0  NOT SELF-POWERED  REMOTE-WAKEUP
+    bMaxPower: 50  (100mA)
+INTERFACE DESCRIPTOR (0.0): class HID
+    bLength: 9
+    bDescriptorType: 0x04 (INTERFACE)
+    bInterfaceNumber: 0
+    bAlternateSetting: 0
+    bNumEndpoints: 1
+    bInterfaceClass: HID (0x03)
+    bInterfaceSubClass: Boot Interface (0x01)
+    bInterfaceProtocol: Mouse (0x02)
+    iInterface: 0
+HID DESCRIPTOR
+    bLength: 9
+    bDescriptorType: 0x21 (HID)
+    bcdHID: 0x0111
+    bCountryCode: Not Supported (0x00)
+    bNumDescriptors: 1
+    bDescriptorType: HID Report (0x22)
+    wDescriptorLength: 93
+ENDPOINT DESCRIPTOR
+    bLength: 7
+    bDescriptorType: 0x05 (ENDPOINT)
+    bEndpointAddress: 0x81  IN  Endpoint:1
+    bmAttributes: 0x03
+    wMaxPacketSize: 8
+bInterval: 1
+
+SET CONFIGURATION Request
+Setup Data
+    bmRequestType: 0x00
+        0... .... = Direction: Host-to-device
+        .00. .... = Type: Standard (0x0)
+        ...0 0000 = Recipient: Device (0x00)
+    bRequest: SET CONFIGURATION (9)
+    bConfigurationValue: 1
+    wIndex: 0 (0x0000)
+wLength: 0
+
+SET CONFIGURATION Response
+空
+
+SET_IDLE Request
+Setup Data
+    bmRequestType: 0x21
+        0... .... = Direction: Host-to-device
+        .01. .... = Type: Class (0x1)
+        ...0 0001 = Recipient: Interface (0x01)
+    bRequest: SET_IDLE (0x0a)
+    wValue: 0x0000
+    wIndex: 0
+    wLength: 0
+
+SET_IDLE Response
+空
+
+GET DESCRIPTOR Request HID Report
+Setup Data
+    bmRequestType: 0x81
+        1... .... = Direction: Device-to-host
+        .00. .... = Type: Standard (0x0)
+        ...0 0001 = Recipient: Interface (0x01)
+    bDescriptorIndex: 0x00
+    bDescriptorType: HID Report (0x22)
+    wInterfaceNumber: 0
+    wDescriptorLength: 157  //93+28=121实际回复长度
+
+GET DESCRIPTOR Response HID Report
+HID Report
+    Global item (Usage)
+    Local item (Usage)
+    Main item (Collection)
+        Header
+        Collection type: Application (0x01)
+        Local item (Usage)
+        Main item (Collection)
+        Global item (Usage)
+        Local item (Usage)
+        Global item (Logical minimum)
+        Global item (Logical maximum)
+        Global item (Report size)
+        Global item (Report count)
+        Main item (Feature)
+        Main item (End collection)
+
+URB_INTERRUPT in
+None
+
+URB_INTERRUPT in
+Leftover Capture Data: 0000ff000000ffff
+
+URB_INTERRUPT in
+None
+
+URB_INTERRUPT in
+Leftover Capture Data: 0000ff000000ffff
+
+URB_INTERRUPT in
+None
+
+URB_INTERRUPT in
+Leftover Capture Data: 0000000000000000
